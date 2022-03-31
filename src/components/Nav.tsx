@@ -1,15 +1,23 @@
 import React from 'react';
 import { AppBar, makeStyles, Tab, Tabs } from '@material-ui/core';
 import { PAGE } from '../App';
+import TitleImage from '../images/showcase.svg';
 
 const useStyles = makeStyles(theme => ({
   root: {
+    display: 'flex',
+    flexDirection: 'row',
     boxShadow: '0px 4px 4px 0px rgb(0 0 0 / 5%), 0px 1px 12px 0px rgb(0 0 0 / 20%)',
     background: 'linear-gradient(142deg, rgba(71,86,214,1) 11%, rgba(21,133,198,1) 50%, rgba(85,71,214,1) 92%)',
+    paddingLeft: '10vw',
+    paddingRight: '10vw',
+  },
+  titleImage: {
+    marginLeft: '-30px',
+    marginRight: '30px',
+    maxWidth: '200px',
   },
   nav: {
-    marginLeft: '10vw',
-    marginRight: '10vw',
   },
   indicator: {
     backgroundColor: 'white'
@@ -26,6 +34,7 @@ function Nav(props: NavProps) {
 
   return (
     <AppBar position="static" className={classes.root}>
+      <img className={classes.titleImage} src={TitleImage} />
       <Tabs
           className={classes.nav}
           value={props.currentTab}

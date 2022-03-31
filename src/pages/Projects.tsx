@@ -155,7 +155,7 @@ function Projects() {
             <iframe className={classes.iframe} src="https://spatial-temporal-storyline.glitch.me" title="spatial-temporal-storyline" allow="geolocation; microphone; camera; midi; encrypted-media; xr-spatial-tracking; fullscreen" allowFullScreen={true}></iframe>
             <div className={classes.content}>
               <p><b>Description</b></p>
-              <p>Through the course of a semester, a small team of Die Hard enthusiasts got together to create a storyline visualization that very much needed to exist: Die Hard. The visualization tracks each notable character throughout the movie and gives details on movements, locations, and events that happen in what is deemed the best Christmas movie ever.</p>
+              <p>Through the course of a semester, a small team and I got together to create a storyline visualization that very much needed to exist: Die Hard. The novel visualization tracks each notable character throughout the movie and gives details on movements, locations, and events that happen in what is deemed the best Christmas movie ever.</p>
 
               <span>Features</span>
               <ul>
