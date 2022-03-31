@@ -20,11 +20,19 @@ const useStyles = makeStyles(theme => ({
     background: 'linear-gradient(0deg, rgba(221,223,247,1) 0%, rgba(255,255,255,1) 100%);',
   },
   body: {
-    height: '100%',
+    overflow: 'auto',
+    flex: 1,
     display: 'flex',
-    marginLeft: '20vw',
-    marginRight: '20vw',
+    flexDirection: 'column',
+  },
+  content: {
+    // height: '100%',
+    flex: 1,
+    display: 'flex',
+    marginLeft: '10vw',
+    marginRight: '10vw',
     marginTop: '20px',
+    marginBottom: '20px',
   },
 }));
 
@@ -40,15 +48,17 @@ function App() {
         onChangeTab={(tab: PAGE) => setCurrentTab(tab)}
       />
       <div className={classes.body}>
-        { currentTab === PAGE.home &&
-          <Home />
-        }
-        { currentTab === PAGE.about &&
-          <About />
-        }
-        { currentTab === PAGE.projects &&
-          <Projects />
-        }
+        <div className={classes.content}>
+          { currentTab === PAGE.home &&
+            <Home />
+          }
+          { currentTab === PAGE.about &&
+            <About />
+          }
+          { currentTab === PAGE.projects &&
+            <Projects />
+          }
+        </div>
       </div>
     </div>
   );

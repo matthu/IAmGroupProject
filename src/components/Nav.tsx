@@ -8,8 +8,8 @@ const useStyles = makeStyles(theme => ({
     background: 'linear-gradient(142deg, rgba(71,86,214,1) 11%, rgba(21,133,198,1) 50%, rgba(85,71,214,1) 92%)',
   },
   nav: {
-    marginLeft: '20vw',
-    marginRight: '20vw',
+    marginLeft: '10vw',
+    marginRight: '10vw',
   },
   indicator: {
     backgroundColor: 'white'
