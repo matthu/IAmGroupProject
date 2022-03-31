@@ -4,6 +4,8 @@ import Nav from './components/Nav';
 import About from './pages/About';
 import Home from './pages/Home';
 import Projects from './pages/Projects';
+import circuitImage1 from './images/circuit1.png';
+import circuitImage2 from './images/circuit2.png';
 
 export const enum PAGE {
   home = 'home',
@@ -24,9 +26,12 @@ const useStyles = makeStyles(theme => ({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
+    backgroundImage: 'url("/showcase/static/media/circuit1.2ecb49810ca7da854f0c.png"), url("/showcase/static/media/circuit2.8fb5820aee7e10f35fd9.png")',
+    backgroundSize: 'contain, contain',
+    backgroundPosition: 'right -10vh top 100px, left -10vh top -150px',
+    backgroundRepeat: 'no-repeat, no-repeat',
   },
   content: {
-    // height: '100%',
     flex: 1,
     display: 'flex',
     marginLeft: '10vw',
@@ -38,6 +43,8 @@ const useStyles = makeStyles(theme => ({
 
 function App() {
   const classes = useStyles();
+  const circuit1 = circuitImage1;
+  const circuit2 = circuitImage2;
 
   const [currentTab, setCurrentTab] = useState<PAGE>(PAGE.home);
 
