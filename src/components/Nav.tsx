@@ -1,5 +1,9 @@
-import React from 'react';
+/**
+ * The main nav bar for the interface
+ */
+
 import { AppBar, makeStyles, Tab, Tabs } from '@material-ui/core';
+import React from 'react';
 import { PAGE } from '../App';
 import TitleImage from '../images/showcase.svg';
 

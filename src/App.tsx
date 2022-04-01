@@ -1,3 +1,7 @@
+/**
+ * Main page of the app that contains pages of content
+ */
+
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import Nav from './components/Nav';
@@ -46,6 +50,7 @@ function App() {
   const circuit1 = circuitImage1;
   const circuit2 = circuitImage2;
 
+  // Save the current tab state
   const [currentTab, setCurrentTab] = useState<PAGE>(PAGE.home);
 
   return (

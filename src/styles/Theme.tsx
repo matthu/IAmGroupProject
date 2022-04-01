@@ -1,3 +1,7 @@
+/**
+ * Main theme of the UI, setting default colors etc
+ */
+
 import { createTheme } from "@material-ui/core";
 
 const theme = createTheme({

@@ -1,3 +1,7 @@
+/**
+ * Main home page that displays introduction content
+ */
+
 import { makeStyles } from '@material-ui/core';
 import React from 'react';
 import ProfileImage from '../images/profile.jpg';

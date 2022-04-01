@@ -1,3 +1,8 @@
+/**
+ * Main index.tsx that allows React to attach to the root element in index.html
+ * Also, the theme is provided here with any other providers 
+ */
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
