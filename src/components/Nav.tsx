@@ -50,7 +50,7 @@ function Nav(props: NavProps) {
         >
           <Tab label="Home" value={PAGE.home} />
           <Tab label="About" value={PAGE.about} />
-          <Tab label="Projects" value={PAGE.projects} />
+          <Tab label="Steps" value={PAGE.steps} />
         </Tabs>
     </AppBar>
   );

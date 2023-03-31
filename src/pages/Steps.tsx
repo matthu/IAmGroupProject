@@ -4,20 +4,12 @@
 
 import { makeStyles, Tab, Tabs } from '@material-ui/core';
 import React, { useState } from 'react';
-import ALIM from '../subpages/ALIM';
-import Interfaces from '../subpages/Interfaces';
 import Sentiment from '../subpages/Sentiment';
 import Storyline from '../subpages/Storyline';
-import VIDSS from '../subpages/VIDSS';
-import VolEMS from '../subpages/VolEMS';
 
 export const enum SUB_PAGE {
-  storyline = 'storyline',
-  sentiment = 'sentiment',
-  interfaces = 'interfaces',
-  vidss = 'vidss',
-  volems = 'volems',
-  alim = 'alim',
+  data = 'data',
+  analysis = 'analysis',
 }
 
 const useStyles = makeStyles(theme => ({
@@ -119,11 +111,11 @@ function ImageTile(props: ImageTileProps) {
   )
 }
 
-function Projects() {
+function Steps() {
   const classes = useStyles();
 
   // Save current sub tab state
-  const [currentSubTab, setCurrentSubTab] = useState<SUB_PAGE>(SUB_PAGE.storyline);
+  const [currentSubTab, setCurrentSubTab] = useState<SUB_PAGE>(SUB_PAGE.data);
 
   // Show tabs and pages for the currently selected tab
   return (
@@ -137,36 +129,20 @@ function Projects() {
         className={classes.tabs}
         classes={{ flexContainer: classes.flexContainer }}
       >
-        <Tab label="Storyline Visualization" value={SUB_PAGE.storyline} className={classes.tab} />
-        <Tab label="Sentiment Analysis" value={SUB_PAGE.sentiment} className={classes.tab} />
-        <Tab label="Example Interfaces" value={SUB_PAGE.interfaces} className={classes.tab} />
-        <Tab label="VIDSS" value={SUB_PAGE.vidss} className={classes.subTab} />
-        <Tab label="VolEMS" value={SUB_PAGE.volems} className={classes.subTab} />
-        <Tab label="ALIM" value={SUB_PAGE.alim} className={classes.subTab} />
+        <Tab label="Data Extraction" value={SUB_PAGE.data} className={classes.tab} />
+        <Tab label="Term Analysis" value={SUB_PAGE.analysis} className={classes.tab} />
         <div className={classes.filler} />
       </Tabs>
       <div className={classes.subPageContent}>
-        { currentSubTab === SUB_PAGE.storyline &&
-          <Storyline />
+        { currentSubTab === SUB_PAGE.data &&
+          <></>
         }
-        { currentSubTab === SUB_PAGE.sentiment &&
-          <Sentiment />
-        }
-        { currentSubTab === SUB_PAGE.interfaces &&
-          <Interfaces />
-        }
-        { currentSubTab === SUB_PAGE.vidss &&
-          <VIDSS />
-        }
-        { currentSubTab === SUB_PAGE.volems &&
-          <VolEMS />
-        }
-        { currentSubTab === SUB_PAGE.alim &&
-          <ALIM />
+        { currentSubTab === SUB_PAGE.analysis &&
+          <></>
         }
       </div>
     </>
   );
 }
 
-export default Projects;
+export default Steps;

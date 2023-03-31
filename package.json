@@ -1,7 +1,7 @@
 {
-  "name": "showcase",
+  "name": "IAmGroupProject",
   "version": "0.1.0",
-  "homepage": "https://matthu.github.io/showcase",
+  "homepage": "https://matthu.github.io/IAmGroupProject",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.12.3",
