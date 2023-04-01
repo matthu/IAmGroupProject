@@ -1,4 +1,4 @@
-import { wordVecs } from "../data/wordvecs25000";
+import wordVecs from "../data/wordvecs10000.json";
 
 /******************\
 |  Word2Vec Utils  |
@@ -8,7 +8,7 @@ import { wordVecs } from "../data/wordvecs25000";
 | @edit 2016/01/08 |
 \******************/
 
-const Word2VecUtils = () => {
+class Word2VecUtils {
   
 
   /**********
@@ -16,66 +16,66 @@ const Word2VecUtils = () => {
 
   /*************
    * constants */
-  var WORDS = Object.keys(wordVecs);
+  // var WORDS = Object.keys((wordVecs as any));
 
   /*********************
    * working variables */
 
   /******************
    * work functions */
-  function diffN(n: number, word1: string, word2: string) {
+  diffN(n: number, word1: string, word2: string) {
     for (var ai = 1; ai < arguments.length; ai++) {
-      if (!wordVecs.hasOwnProperty(arguments[ai])) {
+      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
         return [false, arguments[ai]];
       }
     }
 
-    return getNClosestMatches(
+    return this.getNClosestMatches(
       n,
-      subVecs(wordVecs[word1], wordVecs[word2])
+      this.subVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
     ); 
   }
 
-  function composeN(n: number, word1: string, word2: string) {
+  composeN(n: number, word1: string, word2: string) {
     for (var ai = 1; ai < arguments.length; ai++) {
-      if (!wordVecs.hasOwnProperty(arguments[ai])) {
+      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
         return [false, arguments[ai]];
       }
     }
 
-    return getNClosestMatches(
+    return this.getNClosestMatches(
       n,
-      addVecs(wordVecs[word1], wordVecs[word2])
+      this.addVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
     ); 
   }
 
-  function mixAndMatchN(n: number, sub1: string, sub2: string, add1: string) {
+  mixAndMatchN(n: number, sub1: string, sub2: string, add1: string) {
     for (var ai = 1; ai < arguments.length; ai++) {
-      if (!wordVecs.hasOwnProperty(arguments[ai])) {
+      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
         return [false, arguments[ai]];
       }
     }
 
-    return getNClosestMatches(
+    return this.getNClosestMatches(
       n,
-      addVecs(wordVecs[add1], subVecs(wordVecs[sub1], wordVecs[sub2]))
+      this.addVecs((wordVecs as any)[add1], this.subVecs((wordVecs as any)[sub1], (wordVecs as any)[sub2]))
     ); 
   }
 
-  function findSimilarWords(n: number, word: string) {
-    if (!wordVecs.hasOwnProperty(word)) {
-      return [false, word];
+  findSimilarWords(n: number, word: string) {
+    if (!(wordVecs as any).hasOwnProperty(word)) {
+      return [];
     }
 
-    return getNClosestMatches(
-      n, wordVecs[word]
+    return this.getNClosestMatches(
+      n, (wordVecs as any)[word]
     );
   }
 
-  function getNClosestMatches(n: number, vec: number[]) {
+  getNClosestMatches(n: number, vec: number[]) {
     var sims: [string, number][] = [];
-    for (var word in wordVecs) {
-      var sim = getCosSim(vec, wordVecs[word]);
+    for (var word in (wordVecs as any)) {
+      var sim = this.getCosSim(vec, (wordVecs as any)[word]);
       sims.push([word, sim]);
     }
     sims.sort((a, b) => {
@@ -86,47 +86,49 @@ const Word2VecUtils = () => {
 
   /********************
    * helper functions */
-  function getCosSim(f1: number[], f2: number[]) {
+  getCosSim(f1: number[], f2: number[]) {
     return Math.abs(f1.reduce((sum, a, idx) => {
       return sum + a*f2[idx];
-    }, 0)/(mag(f1)*mag(f2))); //magnitude is 1 for all feature vectors
+    }, 0)/(this.mag(f1)*this.mag(f2))); //magnitude is 1 for all feature vectors
   }
 
-  function mag(a: number[]) {
+  mag(a: number[]) {
     return Math.sqrt(a.reduce((sum, val) => {
       return sum + val*val;  
     }, 0));
   }
 
-  function norm(a: number[]) {
-    var magValue = mag(a);
+  norm(a: number[]) {
+    var magValue = this.mag(a);
     return a.map((val) => {
       return val/magValue; 
     });
   }
 
-  function addVecs(a: number[], b: number[]) {
+  addVecs(a: number[], b: number[]) {
     return a.map((val, idx) => {
       return val + b[idx]; 
     });
   }
 
-  function subVecs(a: number[], b: number[]) {
+  subVecs(a: number[], b: number[]) {
     return a.map((val, idx) => {
       return val - b[idx]; 
     });
   }
 
-  return {
-    diffN: diffN,
-    composeN: composeN,
-    findSimilarWords: findSimilarWords,
-    mixAndMatchN: mixAndMatchN,
-    addVecs: addVecs,
-    subVecs: subVecs,
-    getNClosestMatches: getNClosestMatches,
-    getCosSim: getCosSim
-  };
+  getVecs() {
+    return {
+      diffN: this.diffN,
+      composeN: this.composeN,
+      findSimilarWords: this.findSimilarWords,
+      mixAndMatchN: this.mixAndMatchN,
+      addVecs: this.addVecs,
+      subVecs: this.subVecs,
+      getNClosestMatches: this.getNClosestMatches,
+      getCosSim: this.getCosSim
+    };
+  }
 };
 
 export default Word2VecUtils; 
