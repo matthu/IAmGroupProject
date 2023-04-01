@@ -2,8 +2,9 @@
  * Main home page that displays introduction content
  */
 
-import { makeStyles, Typography } from '@material-ui/core';
-import React from 'react';
+import { Input, makeStyles, Typography } from '@material-ui/core';
+import React, { useMemo, useState } from 'react';
+import Word2VecUtils from '../utils/Word2VecUtils';
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -22,13 +23,23 @@ const useStyles = makeStyles(theme => ({
 
 function Home() {
   const classes = useStyles();
+  const [word, setWord] = useState("")
+  const utility = Word2VecUtils();
+
+  const similarities = useMemo(() => {
+    return utility.findSimilarWords(10, word);
+  }, [utility, word])
 
   return (
     <div>
       <div className={classes.textContainer}>
         <Typography variant='h5'>Welcome to our Project: I AM GROUP</Typography>
-        <br />  
+        <br />
         <p>It is a group recommender that groups users based on similarities of their bios.</p>
+        <br />
+        <Input onChange={(e) => setWord(e.target.value)}/>
+        <br />
+        {similarities.map((item) => <Typography>{item}</Typography>)}
       </div>
     </div>
   );
