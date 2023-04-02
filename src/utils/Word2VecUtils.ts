@@ -21,7 +21,7 @@ class Word2VecUtils {
   filterTerms(userTerms: {[id: string]: string[]}) {
     var filteredTerms: {[id: string]: string[]} = {};
     for (var username of Object.keys(userTerms)) {
-      filteredTerms[username] = userTerms[username].filter(term => (wordVecs1 as any).hasOwnProperty(term))
+      filteredTerms[username] = userTerms[username].filter(term => (wordVecs1 as any).hasOwnProperty(term) || (wordVecs2 as any).hasOwnProperty(term))
     }
     return filteredTerms;
   }
