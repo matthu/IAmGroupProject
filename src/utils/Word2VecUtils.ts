@@ -4,7 +4,6 @@ import wordVecs2 from "../data/wordvecs25000.2.json";
 
 
 class Word2VecUtils {
-  
 
   /**********
    * config */
@@ -18,6 +17,15 @@ class Word2VecUtils {
 
   /******************
    * work functions */
+
+  filterTerms(userTerms: {[id: string]: string[]}) {
+    var filteredTerms: {[id: string]: string[]} = {};
+    for (var username of Object.keys(userTerms)) {
+      filteredTerms[username] = userTerms[username].filter(term => (wordVecs1 as any).hasOwnProperty(term))
+    }
+    return filteredTerms;
+  }
+
   diffN(n: number, word1: string, word2: string) {
     for (var ai = 1; ai < arguments.length; ai++) {
       if (!(wordVecs1 as any).hasOwnProperty(arguments[ai])) {
