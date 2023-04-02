@@ -2,9 +2,9 @@
  * Main home page that displays introduction content
  */
 
- import { Input, makeStyles, Typography } from '@material-ui/core';
- import { useMemo, useState } from 'react';
- import Word2VecUtils from '../utils/Word2VecUtils';
+ import { makeStyles, TextField, Typography } from '@material-ui/core';
+import { useMemo, useState } from 'react';
+import Word2VecUtils from '../utils/Word2VecUtils';
  
  const useStyles = makeStyles(theme => ({
    root: {
@@ -38,7 +38,7 @@
          <br />
          <p>It is a group recommender that groups users based on similarities of their bios.</p>
          <br />
-         <Input onChange={(e) => setWord(e.target.value)}/>
+         <TextField label="Top 10 Similar Words" variant="outlined" onChange={(e) => setWord(e.target.value)}/>
          <br />
          {similarities.map((item) => <Typography>{item[0]}: {item[1]}</Typography>)}
        </div>
