@@ -8,7 +8,11 @@ The webpage can be viewed at [https://matthu.github.io/IAmGroupProject/](https:/
 
 To run this project, simply execute the command `npm install` and `npm run start`.
 
-### Issues
+## Deployment
+
+To deploy this project, simply execute the command `npm run deploy`. It will automatically check in your changes to the `gh-pages` deployment branch.
+
+## Issues
 
 If you hit a "JavaScript heap out of memory" error, try to increase the JS memory size with this command in your VSCode terminal:
 
