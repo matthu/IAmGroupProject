@@ -1,6 +1,8 @@
 // import wordVecs2 from "../data/wordvecs10000.json";
-import wordVecs1 from "../data/wordvecs25000.1.json";
-import wordVecs2 from "../data/wordvecs25000.2.json";
+// import wordVecs1 from "../data/wordvecs25000.1.json";
+// import wordVecs2 from "../data/wordvecs25000.2.json";
+// import wordVecs from "../data/word2Vecs.json";
+import wordVecs from "../data/gloveVecs.json";
 
 
 class Word2VecUtils {
@@ -15,53 +17,88 @@ class Word2VecUtils {
   /*********************
    * working variables */
 
-  /******************
-   * work functions */
+  /**
+   * Work functions
+   */
+
+  getTermVec(term: string): number[] {
+    if ((wordVecs as any).hasOwnProperty(term)) {
+      return (wordVecs as any)[term];
+    }
+    // else if ((wordVecs2 as any).hasOwnProperty(term)) {
+    //   return (wordVecs2 as any)[term];
+    // }
+    else {
+      return [];
+    }
+  }
+
+  getNSimilarTermsToTerm(n: number, userTerms: {[id: string]: string[]}, term: string) {
+    var vec = this.getTermVec(term);
+
+    var termSimilarities: {[id: string]: [string, number][]} = {};
+    for (var username of Object.keys(userTerms)) {
+      var sims: [string, number][] = [];
+      for (var userTerm of userTerms[username]) {
+        var termVec = this.getTermVec(userTerm);
+        var sim = this.getCosSim(vec, termVec);
+        sims.push([userTerm, sim]);
+      }
+
+      sims.sort((a, b) => {
+        return b[1] - a[1]; 
+      });
+      sims = sims.slice(0, n);
+
+      termSimilarities[username] = sims;
+    }
+    return termSimilarities;
+  }
 
   filterTerms(userTerms: {[id: string]: string[]}) {
     var filteredTerms: {[id: string]: string[]} = {};
     for (var username of Object.keys(userTerms)) {
-      filteredTerms[username] = userTerms[username].filter(term => (wordVecs1 as any).hasOwnProperty(term) || (wordVecs2 as any).hasOwnProperty(term))
+      filteredTerms[username] = userTerms[username].filter(term => (wordVecs as any).hasOwnProperty(term))
     }
     return filteredTerms;
   }
 
   diffN(n: number, word1: string, word2: string) {
     for (var ai = 1; ai < arguments.length; ai++) {
-      if (!(wordVecs1 as any).hasOwnProperty(arguments[ai])) {
+      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
         return [false, arguments[ai]];
       }
     }
 
     return this.getNClosestMatches(
       n,
-      this.subVecs((wordVecs1 as any)[word1], (wordVecs1 as any)[word2])
+      this.subVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
     ); 
   }
 
   composeN(n: number, word1: string, word2: string) {
     for (var ai = 1; ai < arguments.length; ai++) {
-      if (!(wordVecs1 as any).hasOwnProperty(arguments[ai])) {
+      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
         return [false, arguments[ai]];
       }
     }
 
     return this.getNClosestMatches(
       n,
-      this.addVecs((wordVecs1 as any)[word1], (wordVecs1 as any)[word2])
+      this.addVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
     ); 
   }
 
   mixAndMatchN(n: number, sub1: string, sub2: string, add1: string) {
     for (var ai = 1; ai < arguments.length; ai++) {
-      if (!(wordVecs1 as any).hasOwnProperty(arguments[ai])) {
+      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
         return [false, arguments[ai]];
       }
     }
 
     return this.getNClosestMatches(
       n,
-      this.addVecs((wordVecs1 as any)[add1], this.subVecs((wordVecs1 as any)[sub1], (wordVecs1 as any)[sub2]))
+      this.addVecs((wordVecs as any)[add1], this.subVecs((wordVecs as any)[sub1], (wordVecs as any)[sub2]))
     ); 
   }
 
@@ -70,11 +107,8 @@ class Word2VecUtils {
    */
   findSimilarWords(n: number, word: string) {
     var vec = [];
-    if ((wordVecs1 as any).hasOwnProperty(word)) {
-      vec = (wordVecs1 as any)[word];
-    }
-    else if ((wordVecs2 as any).hasOwnProperty(word)) {
-      vec = (wordVecs2 as any)[word];
+    if ((wordVecs as any).hasOwnProperty(word)) {
+      vec = (wordVecs as any)[word];
     }
     else {
       return [];
@@ -87,26 +121,10 @@ class Word2VecUtils {
 
   getNClosestMatches(n: number, vec: number[]) {
     var sims: [string, number][] = [];
-    var sims1: [string, number][] = [];
-    for (var word in (wordVecs1 as any)) {
-      var sim = this.getCosSim(vec, (wordVecs1 as any)[word]);
-      sims1.push([word, sim]);
+    for (var word in (wordVecs as any)) {
+      var sim = this.getCosSim(vec, (wordVecs as any)[word]);
+      sims.push([word, sim]);
     }
-    sims1.sort((a, b) => {
-      return b[1] - a[1]; 
-    });
-    sims = sims1.slice(0, n);
-
-    var sims2: [string, number][] = [];
-    for (var word in (wordVecs2 as any)) {
-      var sim = this.getCosSim(vec, (wordVecs2 as any)[word]);
-      sims2.push([word, sim]);
-    }
-    sims2.sort((a, b) => {
-      return b[1] - a[1]; 
-    });
-    sims = sims.concat(sims2.slice(0, n));
-
     sims.sort((a, b) => {
       return b[1] - a[1]; 
     });
