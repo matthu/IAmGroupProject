@@ -90,9 +90,6 @@ function Home() {
             <Typography className={classes.subtext}><b><i>"Hobby" Similarities</i></b>: {hobbyWeights[username].map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
           </>
         )}
-        <Typography>Unique Terms:</Typography>
-        <br />
-        {JSON.stringify(uniqueTerms)}
       </div>
     </div>
   );
