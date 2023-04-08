@@ -22,22 +22,41 @@ const useStyles = makeStyles(theme => ({
   },
   subtext: {
     paddingLeft: '15px',
-  }
+  },
+  subtitleText: {
+    fontWeight: 700
+  },
 }));
 
 
 function Home() {
   const classes = useStyles();
+  const [localWord, setLocalWord] = useState("")
   const [word, setWord] = useState("")
-  const word2VecUtility = new Word2VecUtils();
-  const bioTokenizer = new BioTokenizer();
-  const bios = bioTokenizer.getBios();
-  const bioTokens = bioTokenizer.getBioTokens();
-  const filteredTerms = word2VecUtility.filterTerms(bioTokens);
+
+  const word2VecUtility = useMemo(() => {
+    return new Word2VecUtils();
+  }, [])
+
+  const bioTokenizer = useMemo(() => {
+    return new BioTokenizer();
+  }, [])
+
+  const bios = useMemo(() => {
+    return bioTokenizer?.getBios();
+  }, [bioTokenizer])
+
+  const bioTokens = useMemo(() => {
+    return bioTokenizer?.getBioTokens();
+  }, [bioTokenizer])
+
+  const filteredTerms = useMemo(() => {
+    return word2VecUtility?.filterTerms(bioTokens);
+  }, [word2VecUtility])
 
   const similarities = useMemo(() => {
     return word2VecUtility.findSimilarWords(10, word);
-  }, [word2VecUtility, word])
+  }, [word])
 
   const sportWeights = useMemo(() => {
     return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "sport");
@@ -65,6 +84,18 @@ function Home() {
     return Array.from(terms.values()).sort();
   }, [bioTokens])
 
+  const comparisonA = useMemo(() => {
+    return word2VecUtility.getComparisonOfTerms(filteredTerms["dushyant-rathore"], filteredTerms["satish-kumar-reddy-madduri"]);
+  }, [filteredTerms])
+
+  const comparisonB = useMemo(() => {
+    return word2VecUtility.getComparisonOfTerms(filteredTerms["satish-kumar-reddy-madduri"], filteredTerms["dushyant-rathore"]);
+  }, [filteredTerms])
+
+  const userSimilarities = useMemo(() => {
+    return word2VecUtility.getSimilarityOfAllUsers(filteredTerms).slice(0, 50);
+  }, [filteredTerms])
+
   return (
     <div>
       <div className={classes.textContainer}>
@@ -72,11 +103,32 @@ function Home() {
         <br />
         <p>It is a group recommender that groups users based on similarities of their bios.</p>
         <br />
-        <TextField label="Top 10 Similar Words" variant="outlined" onChange={(e) => setWord(e.target.value)}/>
+        <TextField
+          label="Top 10 Similar Words"
+          variant="outlined"
+          onKeyUp={(e) => {
+            if (e.keyCode === 13) {
+              setWord(localWord);
+            }
+          }}
+          onChange={(e) => setLocalWord(e.target.value)}/>
         <br />
         {similarities.map((item) => <Typography>{item[0]}: {item[1]}</Typography>)}
         <br />
-        <Typography>User Bio Tokens:</Typography>
+        <Typography className={classes.subtitleText}>User Pair Similarity:</Typography>
+        <br />
+        <Typography>"dushyant-rathore" to "satish-kumar-reddy-madduri" Average: {comparisonA.map(item => item[1]).reduce((a, b) => a + b) / comparisonA.length}</Typography>
+        <Typography>{comparisonA.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+        <br />
+        <Typography>"satish-kumar-reddy-madduri" to "dushyant-rathore" Average: {comparisonB.map(item => item[1]).reduce((a, b) => a + b) / comparisonB.length}</Typography>
+        <Typography>{comparisonB.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+        <Typography>Pair Similarity Average: {comparisonA.concat(comparisonB).map(item => item[1]).reduce((a, b) => a + b) / (comparisonA.length + comparisonB.length)}</Typography>
+        <br />
+        <Typography className={classes.subtitleText}>Top 50 User Similarity Pairs:</Typography>
+        <br />
+        {userSimilarities.map(item => <Typography>{item[0] + " - " + item[1] + ": " + item[2]}</Typography>)}
+        <br />
+        <Typography className={classes.subtitleText}>User Bio Tokens:</Typography>
         <br />
         {Object.keys(bioTokens).map((username) => 
           <>

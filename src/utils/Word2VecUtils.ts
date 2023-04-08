@@ -55,6 +55,55 @@ class Word2VecUtils {
     return termSimilarities;
   }
 
+  getComparisonOfTerms(userA: string[], userB: string[]) {
+    var sims: [string, number][] = [];
+    for (const i of userA) {
+      const iVec = this.getTermVec(i);
+      var termSims: number[] = userB.map(term => this.getCosSim(iVec, this.getTermVec(term)));
+      const sim = Math.max(...termSims)
+      sims.push([i, sim]);
+    }
+    return sims;
+  }
+
+  getSimilarityOfTwoUsers(userA: string[], userB: string[]) {
+    var sims: number[] = [];
+    for (const i of userA) {
+      const iVec = this.getTermVec(i);
+      var termSims: number[] = userB.map(term => this.getCosSim(iVec, this.getTermVec(term)));
+      const sim = Math.max(...termSims)
+      sims.push(sim);
+    }
+    for (const i of userB) {
+      const iVec = this.getTermVec(i);
+      var termSims: number[] = userA.map(term => this.getCosSim(iVec, this.getTermVec(term)));
+      const sim = Math.max(...termSims)
+      sims.push(sim);
+    }
+    var average = sims.reduce((a, b) => a + b) / sims.length;
+    return average;
+  }
+
+  getSimilarityOfAllUsers(userTerms: {[id: string]: string[]}) {
+    var pairsEncountered: string[] = []
+    var sims: [string, string, number][] = [];
+    for (var usernameA of Object.keys(userTerms)) {
+      var userA = userTerms[usernameA];
+      for (var usernameB of Object.keys(userTerms)) {
+        if (usernameB !== usernameA && !pairsEncountered.includes(usernameB + usernameA)) {
+          var userB = userTerms[usernameB];
+          var simScore = this.getSimilarityOfTwoUsers(userA, userB);
+          sims.push([usernameA, usernameB, simScore]);
+          pairsEncountered.push(usernameA + usernameB);
+        }
+      }
+    }
+    sims.sort((a, b) => {
+      return b[2] - a[2]; 
+    });
+    return sims;
+  }
+
   filterTerms(userTerms: {[id: string]: string[]}) {
     var filteredTerms: {[id: string]: string[]} = {};
     for (var username of Object.keys(userTerms)) {
