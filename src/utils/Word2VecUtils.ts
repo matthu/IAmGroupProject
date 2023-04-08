@@ -1,38 +1,20 @@
-// import wordVecs2 from "../data/wordvecs10000.json";
-// import wordVecs1 from "../data/wordvecs25000.1.json";
-// import wordVecs2 from "../data/wordvecs25000.2.json";
 // import wordVecs from "../data/word2Vecs.json";
 import wordVecs from "../data/gloveVecs.json";
 
-
+/** A utility class for calculating simularity scores */
 class Word2VecUtils {
 
-  /**********
-   * config */
-
-  /*************
-   * constants */
-  // var WORDS = Object.keys((wordVecs as any));
-
-  /*********************
-   * working variables */
-
-  /**
-   * Work functions
-   */
-
+  /** Get a term's vec */
   getTermVec(term: string): number[] {
     if ((wordVecs as any).hasOwnProperty(term)) {
       return (wordVecs as any)[term];
     }
-    // else if ((wordVecs2 as any).hasOwnProperty(term)) {
-    //   return (wordVecs2 as any)[term];
-    // }
     else {
       return [];
     }
   }
 
+  /** Get n most similar user terms to a specific term */
   getNSimilarTermsToTerm(n: number, userTerms: {[id: string]: string[]}, term: string) {
     var vec = this.getTermVec(term);
 
@@ -55,6 +37,7 @@ class Word2VecUtils {
     return termSimilarities;
   }
 
+  /** This calculates the similarity of one user's terms to another user's terms */
   getComparisonOfTerms(userA: string[], userB: string[]) {
     var sims: [string, number][] = [];
     for (const i of userA) {
@@ -66,6 +49,7 @@ class Word2VecUtils {
     return sims;
   }
 
+  /** This calculates the similarity between two users' bio terms */
   getSimilarityOfTwoUsers(userA: string[], userB: string[]) {
     var sims: number[] = [];
     for (const i of userA) {
@@ -84,6 +68,10 @@ class Word2VecUtils {
     return average;
   }
 
+  /**
+   * This calculates the similarities of every user pair, across all users
+   * Format is [usernameA, usernameB, similarityScore][]
+   */
   getSimilarityOfAllUsers(userTerms: {[id: string]: string[]}) {
     var pairsEncountered: string[] = []
     var sims: [string, string, number][] = [];
@@ -104,6 +92,7 @@ class Word2VecUtils {
     return sims;
   }
 
+  /** Get terms filtered to those in our word2vec or glove vocabulary */
   filterTerms(userTerms: {[id: string]: string[]}) {
     var filteredTerms: {[id: string]: string[]} = {};
     for (var username of Object.keys(userTerms)) {

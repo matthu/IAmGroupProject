@@ -28,35 +28,45 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-
+/** The home page of the application */
 function Home() {
   const classes = useStyles();
+
+  /** The word to find similar words to */
   const [localWord, setLocalWord] = useState("")
   const [word, setWord] = useState("")
 
+  /** A utility class for calculating simularity scores */
   const word2VecUtility = useMemo(() => {
     return new Word2VecUtils();
   }, [])
 
+  /** A utility class for extracting tokens from bios */
   const bioTokenizer = useMemo(() => {
     return new BioTokenizer();
   }, [])
 
-  const bios = useMemo(() => {
-    return bioTokenizer?.getBios();
-  }, [bioTokenizer])
-
-  const bioTokens = useMemo(() => {
-    return bioTokenizer?.getBioTokens();
-  }, [bioTokenizer])
-
-  const filteredTerms = useMemo(() => {
-    return word2VecUtility?.filterTerms(bioTokens);
-  }, [word2VecUtility])
-
+  /** Finding similar words */
   const similarities = useMemo(() => {
     return word2VecUtility.findSimilarWords(10, word);
   }, [word])
+
+  /** The raw bios of users */
+  const bios: {[username: string]: string} = useMemo(() => {
+    return bioTokenizer?.getBios();
+  }, [bioTokenizer])
+
+  /** The extracted tokens from bios */
+  const bioTokens: {[username: string]: string[]} = useMemo(() => {
+    return bioTokenizer?.getBioTokens();
+  }, [bioTokenizer])
+
+  /** The terms filtered to those in our word2vec or glove vocabulary */
+  const filteredTerms: {[username: string]: string[]} = useMemo(() => {
+    return word2VecUtility?.filterTerms(bioTokens);
+  }, [word2VecUtility])
+
+  /** These are interest weights to try to find most valuable words to us */
 
   const sportWeights = useMemo(() => {
     return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "sport");
@@ -74,6 +84,7 @@ function Home() {
     return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "food");
   }, [filteredTerms])
 
+  /** This finds all unique terms in the vocabulary */
   const uniqueTerms = useMemo(() => {
     var terms = new Set<string>();
     for (var username of Object.keys(bioTokens)) {
@@ -84,6 +95,8 @@ function Home() {
     return Array.from(terms.values()).sort();
   }, [bioTokens])
 
+  /** These calculate the similarity between two users */
+
   const comparisonA = useMemo(() => {
     return word2VecUtility.getComparisonOfTerms(filteredTerms["dushyant-rathore"], filteredTerms["satish-kumar-reddy-madduri"]);
   }, [filteredTerms])
@@ -92,7 +105,11 @@ function Home() {
     return word2VecUtility.getComparisonOfTerms(filteredTerms["satish-kumar-reddy-madduri"], filteredTerms["dushyant-rathore"]);
   }, [filteredTerms])
 
-  const userSimilarities = useMemo(() => {
+  /** 
+   * This calculates the similarities of every user pair, across all users
+   * Format is [usernameA, usernameB, similarityScore][]
+   */
+  const userSimilarities: [string, string, number][] = useMemo(() => {
     return word2VecUtility.getSimilarityOfAllUsers(filteredTerms).slice(0, 50);
   }, [filteredTerms])
 

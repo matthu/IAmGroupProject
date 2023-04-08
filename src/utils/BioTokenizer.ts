@@ -9,6 +9,7 @@ interface WinkPosTags {
   lemma: string;
 }
 
+/** A utility class for extracting tokens from bios */
 class BioTokenizer {
 
   private stopWords = [
@@ -21,10 +22,12 @@ class BioTokenizer {
     "doing", "it", "how", "further", "was", "here", "than", "m"
   ];
 
+  /** The raw bios of users */
   getBios() {
     return slackBios as {[id: string]: string};
   }
 
+  /** Get the extracted tokens from bios */
   getBioTokens() {
     var bioTokens: {[id: string]: string[]} = {}
     for (var username in (slackBios as any)) {
