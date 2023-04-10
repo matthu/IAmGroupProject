@@ -174,6 +174,9 @@ function Home() {
         <div>
 
         </div>
+        <br />
+        <p>It is a group recommender that groups users based on similarities of their bios.</p>
+        <br />
         <div>
           <br />
           <form onSubmit={handleTerm}>
@@ -187,7 +190,7 @@ function Home() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>User</TableCell>
+                <TableCell>Username</TableCell>
                 <TableCell>Term</TableCell>
                 <TableCell>Score</TableCell>
               </TableRow>
@@ -232,9 +235,7 @@ function Home() {
             </TableBody>
           </Table>
         </div>
-        <br />
-        <p>It is a group recommender that groups users based on similarities of their bios.</p>
-        <br />
+        <br /> 
         <TextField
           label="Top 10 Similar Words"
           variant="outlined"
