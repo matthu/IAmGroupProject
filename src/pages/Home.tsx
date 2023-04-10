@@ -81,8 +81,10 @@ function Home() {
 
   /** These are interest weights to try to find most valuable words to us */
 
+  const categories = ["sports", "programming", "hobby", "food"];
+
   const sportWeights = useMemo(() => {
-    return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "sport");
+    return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "sports");
   }, [filteredTerms])
 
   const programmingWeights = useMemo(() => {
@@ -118,6 +120,16 @@ function Home() {
     return word2VecUtility.getComparisonOfTerms(filteredTerms["satish-kumar-reddy-madduri"], filteredTerms["dushyant-rathore"]);
   }, [filteredTerms])
 
+  /** These calculate the weights from the categories for the two users */
+
+  const weightsA = useMemo(() => {
+    return word2VecUtility.getUserCategoryWeights(filteredTerms["dushyant-rathore"], categories);
+  }, [filteredTerms])
+
+  const weightsB = useMemo(() => {
+    return word2VecUtility.getUserCategoryWeights(filteredTerms["satish-kumar-reddy-madduri"], categories);
+  }, [filteredTerms])
+  
   /** 
    * This calculates the similarities of every user pair, across all users
    * Format is [usernameA, usernameB, similarityScore][]
@@ -256,6 +268,14 @@ function Home() {
         <Typography>{comparisonB.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
         <Typography>Pair Similarity Average: {comparisonA.concat(comparisonB).map(item => item[1]).reduce((a, b) => a + b) / (comparisonA.length + comparisonB.length)}</Typography>
         <br />
+        <Typography className={classes.subtitleText}>Category Weights:</Typography>
+        <br />
+        <Typography>"dushyant-rathore" Category Weights</Typography>
+        <Typography>{weightsA.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+        <br />
+        <Typography>"satish-kumar-reddy-madduri" Category Weights</Typography>
+        <Typography>{weightsB.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+        <br />
         <Typography className={classes.subtitleText}>Top 50 User Similarity Pairs:</Typography>
         <br />
         {userSimilarities.map(item => <Typography>{item[0] + " - " + item[1] + ": " + item[2]}</Typography>)}
@@ -268,7 +288,7 @@ function Home() {
             <Typography className={classes.subtext}><b><i>Original</i></b>: {bios[username]}</Typography>
             <Typography className={classes.subtext}><b><i>Terms</i></b>: {bioTokens[username].join(", ")}</Typography>
             <Typography className={classes.subtext}><b><i>Word2Vec Terms</i></b>: {filteredTerms[username].join(", ")}</Typography>
-            <Typography className={classes.subtext}><b><i>"Sport" Similarities</i></b>: {sportWeights[username].map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+            <Typography className={classes.subtext}><b><i>"Sports" Similarities</i></b>: {sportWeights[username].map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
             <Typography className={classes.subtext}><b><i>"Programming" Similarities</i></b>: {programmingWeights[username].map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
             <Typography className={classes.subtext}><b><i>"Food" Similarities</i></b>: {foodWeights[username].map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
             <Typography className={classes.subtext}><b><i>"Hobby" Similarities</i></b>: {hobbyWeights[username].map(item => item[0] + ": " + item[1]).join(", ")}</Typography>

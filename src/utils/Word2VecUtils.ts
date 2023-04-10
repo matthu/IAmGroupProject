@@ -49,6 +49,20 @@ class Word2VecUtils {
     return sims;
   }
 
+  getUserCategoryWeights(user: string[], terms: string[]) {
+    var sims: [string, number][] = [];
+    for (const userTerm of user) {
+      const iVec = this.getTermVec(userTerm);
+      var termSims: number[] = terms.map(term => this.getCosSim(iVec, this.getTermVec(term)));
+      const sim = Math.max(...termSims)
+      sims.push([userTerm, sim]);
+    }
+    sims.sort((a, b) => {
+      return b[1] - a[1]; 
+    });
+    return sims;
+  }
+
   /** This calculates the similarity between two users' bio terms */
   getSimilarityOfTwoUsers(userA: string[], userB: string[]) {
     var sims: number[] = [];
