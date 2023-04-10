@@ -145,29 +145,37 @@ function Home() {
   // function to simply get the terms 
   function handleTerm(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setFilteredScores(
-      Object.entries(tfidfScores).reduce((acc: Scores, [username, scores]) => {
-        const filtered = Object.entries(scores).filter(([term]) =>
-          term.toLowerCase().includes(inputValue.toLowerCase())
-        );
-        if (filtered.length) {
-          acc[username] = Object.fromEntries(filtered);
-        }
-        return acc;
-      }, {})
-    );
+    if (!inputValue) {
+      setFilteredScores({});
+    } else {
+      setFilteredScores(
+        Object.entries(tfidfScores).reduce((acc: Scores, [username, scores]) => {
+          const filtered = Object.entries(scores).filter(([term]) =>
+            term.toLowerCase().includes(inputValue.toLowerCase())
+          );
+          if (filtered.length) {
+            acc[username] = Object.fromEntries(filtered);
+          }
+          return acc;
+        }, {})
+      );
+    }
   }
   //function to get the users and the terms 
   const handleUsernameLookup = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUsernameLookupValue(event.target.value);
-    setFilteredNames(
-      Object.entries(tfidfScores)
-        .filter(([username]) => username.toLowerCase().includes(event.target.value.trim().toLowerCase()))
-        .reduce((acc: Scores, [username, scores]) => {
-          acc[username] = scores;
-          return acc;
-        }, {})
-    );
+    if (!event.target.value) {
+      setFilteredNames({});
+    } else {
+      setFilteredNames(
+        Object.entries(tfidfScores)
+          .filter(([username]) => username.toLowerCase().includes(event.target.value.trim().toLowerCase()))
+          .reduce((acc: Scores, [username, scores]) => {
+            acc[username] = scores;
+            return acc;
+          }, {})
+      );
+    }
   };
 
   return (
@@ -184,9 +192,6 @@ function Home() {
           )
         )} */}
         <div>
-
-        </div>
-        <div>
           <br />
           <form onSubmit={handleTerm}>
             <TextField
@@ -196,26 +201,13 @@ function Home() {
               onChange={handleLookup}
             />
           </form>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>User</TableCell>
-                <TableCell>Term</TableCell>
-                <TableCell>Score</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.entries(filteredScores).map(([username, scores]) =>
-                Object.entries(scores).map(([term, score]) =>
-                  <TableRow key={`${username}-${term}`}>
-                    <TableCell>{username}</TableCell>
-                    <TableCell>{term}</TableCell>
-                    <TableCell>{score.toFixed(10)}</TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+          {Object.entries(filteredScores).map(([username, scores]) =>
+            <Typography>
+              {username + ": " +
+                Object.entries(scores).map(([term, score]) => score.toFixed(10)).join(", ")
+              }
+            </Typography>
+          )}
           <br />
           <TextField
             label="Lookup Username"
@@ -223,29 +215,12 @@ function Home() {
             value={usernameLookupValue}
             onChange={handleUsernameLookup}
           />
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Username</TableCell>
-                <TableCell>Term</TableCell>
-                <TableCell>Score</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {Object.entries(filteredNames).map(([username, scores]) =>
-                Object.entries(scores).map(([term, score]) => (
-                  <TableRow key={`${username}-${term}`}>
-                    <TableCell>{username}</TableCell>
-                    <TableCell>{term}</TableCell>
-                    <TableCell>{score.toFixed(10)}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          {Object.entries(filteredNames).map(([username, scores]) =>
+              Object.entries(scores).map(([term, score]) => 
+                <Typography>{term + ": " + score.toFixed(10)}</Typography>
+              )
+          )}
         </div>
-        <br />
-        <p>It is a group recommender that groups users based on similarities of their bios.</p>
         <br />
         <TextField
           label="Top 10 Similar Words"
