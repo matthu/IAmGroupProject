@@ -6,6 +6,14 @@ import { makeStyles, TextField, Typography } from '@material-ui/core';
 import { useMemo, useState } from 'react';
 import BioTokenizer from '../utils/BioTokenizer';
 import Word2VecUtils from '../utils/Word2VecUtils';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import { tfidfScores } from '../utils/TF_IDF';
+
+type Scores = Record<string, Record<string, number>>;
 
 const useStyles = makeStyles(theme => ({
   root: {
@@ -35,6 +43,11 @@ function Home() {
   /** The word to find similar words to */
   const [localWord, setLocalWord] = useState("")
   const [word, setWord] = useState("")
+  const [filteredScores, setFilteredScores] = useState<Scores>({});
+  const [filteredNames, setFilteredNames] = useState<Scores>({});
+  const [inputValue, setInputValue] = useState('');
+  const [usernameLookupValue, setUsernameLookupValue] = useState('');
+
 
   /** A utility class for calculating simularity scores */
   const word2VecUtility = useMemo(() => {
@@ -52,17 +65,17 @@ function Home() {
   }, [word])
 
   /** The raw bios of users */
-  const bios: {[username: string]: string} = useMemo(() => {
+  const bios: { [username: string]: string } = useMemo(() => {
     return bioTokenizer?.getBios();
   }, [bioTokenizer])
 
   /** The extracted tokens from bios */
-  const bioTokens: {[username: string]: string[]} = useMemo(() => {
+  const bioTokens: { [username: string]: string[] } = useMemo(() => {
     return bioTokenizer?.getBioTokens();
   }, [bioTokenizer])
 
   /** The terms filtered to those in our word2vec or glove vocabulary */
-  const filteredTerms: {[username: string]: string[]} = useMemo(() => {
+  const filteredTerms: { [username: string]: string[] } = useMemo(() => {
     return word2VecUtility?.filterTerms(bioTokens);
   }, [word2VecUtility])
 
@@ -109,14 +122,116 @@ function Home() {
    * This calculates the similarities of every user pair, across all users
    * Format is [usernameA, usernameB, similarityScore][]
    */
+
   const userSimilarities: [string, string, number][] = useMemo(() => {
     return word2VecUtility.getSimilarityOfAllUsers(filteredTerms).slice(0, 50);
   }, [filteredTerms])
+
+  function handleLookup(event: React.ChangeEvent<HTMLInputElement>) {
+    setInputValue(event.target.value.trim());
+  }
+  // function to simply get the terms 
+  function handleTerm(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setFilteredScores(
+      Object.entries(tfidfScores).reduce((acc: Scores, [username, scores]) => {
+        const filtered = Object.entries(scores).filter(([term]) =>
+          term.toLowerCase().includes(inputValue.toLowerCase())
+        );
+        if (filtered.length) {
+          acc[username] = Object.fromEntries(filtered);
+        }
+        return acc;
+      }, {})
+    );
+  }
+  //function to get the users and the terms 
+  const handleUsernameLookup = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setUsernameLookupValue(event.target.value);
+    setFilteredNames(
+      Object.entries(tfidfScores)
+        .filter(([username]) => username.toLowerCase().includes(event.target.value.trim().toLowerCase()))
+        .reduce((acc: Scores, [username, scores]) => {
+          acc[username] = scores;
+          return acc;
+        }, {})
+    );
+  };
 
   return (
     <div>
       <div className={classes.textContainer}>
         <Typography variant='h5'>Welcome to our Project: I AM GROUP</Typography>
+        {/* {Object.entries(tfidfScores).map(([username, scores]) =>
+          Object.entries(scores).map(([term, score]) =>
+            <tr key={`${username}-${term}`}>
+              <td>{username}</td>
+              <td>{term}</td>
+              <td>{score.toFixed(10)}</td>
+            </tr>
+          )
+        )} */}
+        <div>
+
+        </div>
+        <div>
+          <br />
+          <form onSubmit={handleTerm}>
+            <TextField
+              label="Lookup Term"
+              variant="outlined"
+              value={inputValue}
+              onChange={handleLookup}
+            />
+          </form>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>User</TableCell>
+                <TableCell>Term</TableCell>
+                <TableCell>Score</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Object.entries(filteredScores).map(([username, scores]) =>
+                Object.entries(scores).map(([term, score]) =>
+                  <TableRow key={`${username}-${term}`}>
+                    <TableCell>{username}</TableCell>
+                    <TableCell>{term}</TableCell>
+                    <TableCell>{score.toFixed(10)}</TableCell>
+                  </TableRow>
+                )
+              )}
+            </TableBody>
+          </Table>
+          <br />
+          <TextField
+            label="Lookup Username"
+            variant="outlined"
+            value={usernameLookupValue}
+            onChange={handleUsernameLookup}
+          />
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Username</TableCell>
+                <TableCell>Term</TableCell>
+                <TableCell>Score</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {Object.entries(filteredNames).map(([username, scores]) =>
+                Object.entries(scores).map(([term, score]) => (
+                  <TableRow key={`${username}-${term}`}>
+                    <TableCell>{username}</TableCell>
+                    <TableCell>{term}</TableCell>
+                    <TableCell>{score.toFixed(10)}</TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
         <br />
         <p>It is a group recommender that groups users based on similarities of their bios.</p>
         <br />
@@ -128,7 +243,7 @@ function Home() {
               setWord(localWord);
             }
           }}
-          onChange={(e) => setLocalWord(e.target.value)}/>
+          onChange={(e) => setLocalWord(e.target.value)} />
         <br />
         {similarities.map((item) => <Typography>{item[0]}: {item[1]}</Typography>)}
         <br />
@@ -147,7 +262,7 @@ function Home() {
         <br />
         <Typography className={classes.subtitleText}>User Bio Tokens:</Typography>
         <br />
-        {Object.keys(bioTokens).map((username) => 
+        {Object.keys(bioTokens).map((username) =>
           <>
             <Typography><b>{username}</b>:</Typography>
             <Typography className={classes.subtext}><b><i>Original</i></b>: {bios[username]}</Typography>
