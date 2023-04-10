@@ -38,7 +38,7 @@ class Word2VecUtils {
   }
 
   /** This calculates the similarity of one user's terms to another user's terms */
-  getComparisonOfTerms(userA: string[], userB: string[]) {
+  getComparisonOfTermsList(userA: string[], userB: string[]) {
     var sims: [string, number][] = [];
     for (const i of userA) {
       const iVec = this.getTermVec(i);
@@ -49,7 +49,19 @@ class Word2VecUtils {
     return sims;
   }
 
-  getUserCategoryWeights(user: string[], terms: string[]) {
+  /** This calculates the similarity of one user's terms to another user's terms */
+  getComparisonOfTerms(userA: string[], userB: string[]) {
+    var sims: {[id: string]: number} = {};
+    for (const i of userA) {
+      const iVec = this.getTermVec(i);
+      var termSims: number[] = userB.map(term => this.getCosSim(iVec, this.getTermVec(term)));
+      const sim = Math.max(...termSims)
+      sims[i] = sim;
+    }
+    return sims;
+  }
+
+  getUserCategoryWeightsList(user: string[], terms: string[]) {
     var sims: [string, number][] = [];
     for (const userTerm of user) {
       const iVec = this.getTermVec(userTerm);
@@ -60,6 +72,17 @@ class Word2VecUtils {
     sims.sort((a, b) => {
       return b[1] - a[1]; 
     });
+    return sims;
+  }
+
+  getUserCategoryWeights(user: string[], terms: string[]) {
+    var sims: {[id: string]: number} = {};
+    for (const userTerm of user) {
+      const iVec = this.getTermVec(userTerm);
+      var termSims: number[] = terms.map(term => this.getCosSim(iVec, this.getTermVec(term)));
+      const sim = Math.max(...termSims)
+      sims[userTerm] = sim;
+    }
     return sims;
   }
 

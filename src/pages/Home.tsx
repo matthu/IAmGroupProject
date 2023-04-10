@@ -6,11 +6,6 @@ import { makeStyles, TextField, Typography } from '@material-ui/core';
 import { useMemo, useState } from 'react';
 import BioTokenizer from '../utils/BioTokenizer';
 import Word2VecUtils from '../utils/Word2VecUtils';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import { tfidfScores } from '../utils/TF_IDF';
 
 type Scores = Record<string, Record<string, number>>;
@@ -34,11 +29,19 @@ const useStyles = makeStyles(theme => ({
   subtitleText: {
     fontWeight: 700
   },
+  subtitleDescription: {
+    fontStyle: "italic"
+  },
 }));
 
 /** The home page of the application */
 function Home() {
   const classes = useStyles();
+
+  /** Parameters */
+  const similarityWeight = 1.0; // The weight to apply to similarity weights. I.e. "How much we should pay attention to similarity weights".
+  const tfidfWeight = 0.8; // The weight to apply to tf-idf weights. I.e. "How much we should pay attention to tf-idf weights".
+  const categoryWeight = 0.8; // The weight to apply to category weights. I.e. "How much we should pay attention to category weigths".
 
   /** The word to find similar words to */
   const [localWord, setLocalWord] = useState("")
@@ -112,23 +115,57 @@ function Home() {
 
   /** These calculate the similarity between two users */
 
-  const comparisonA = useMemo(() => {
+  const similarityWeightsA = useMemo(() => {
     return word2VecUtility.getComparisonOfTerms(filteredTerms["dushyant-rathore"], filteredTerms["satish-kumar-reddy-madduri"]);
   }, [filteredTerms])
 
-  const comparisonB = useMemo(() => {
+  const similarityWeightsB = useMemo(() => {
     return word2VecUtility.getComparisonOfTerms(filteredTerms["satish-kumar-reddy-madduri"], filteredTerms["dushyant-rathore"]);
   }, [filteredTerms])
 
   /** These calculate the weights from the categories for the two users */
 
-  const weightsA = useMemo(() => {
+  const categoryWeightsA = useMemo(() => {
     return word2VecUtility.getUserCategoryWeights(filteredTerms["dushyant-rathore"], categories);
   }, [filteredTerms])
 
-  const weightsB = useMemo(() => {
+  const categoryWeightsB = useMemo(() => {
     return word2VecUtility.getUserCategoryWeights(filteredTerms["satish-kumar-reddy-madduri"], categories);
   }, [filteredTerms])
+
+  /** These are the TF-IDF weights for the two users */
+
+  const tfidfWeightsA = useMemo(() => {
+    return tfidfScores["dushyant-rathore"];
+  }, [tfidfScores])
+
+  const tfidfWeightsB = useMemo(() => {
+    return tfidfScores["satish-kumar-reddy-madduri"];
+  }, [tfidfScores])
+
+  /** These calculate the weights from the categories for the two users */
+
+  const finalWeightsA = useMemo(() => {
+    const finalWeights: {[id: string]: number} = {};
+    for (const term of Object.keys(similarityWeightsA)) {
+      const similarity = similarityWeightsA[term] ?? 0;
+      const category = categoryWeightsA[term] ?? 0;
+      const tfidf = tfidfWeightsA[term] ?? 0;
+      finalWeights[term] = (similarity) * (category) * (tfidf);
+    }
+    return finalWeights;
+  }, [similarityWeightsA, categoryWeightsA, tfidfWeightsA])
+
+  const finalWeightsB = useMemo(() => {
+    const finalWeights: {[id: string]: number} = {};
+    for (const term of Object.keys(similarityWeightsB)) {
+      const similarity = similarityWeightsB[term] ?? 0;
+      const category = categoryWeightsB[term] ?? 0;
+      const tfidf = tfidfWeightsB[term] ?? 0;
+      finalWeights[term] = (similarity) * (category) * (tfidf);
+    }
+    return finalWeights;
+  }, [similarityWeightsA, categoryWeightsA, tfidfWeightsA])
   
   /** 
    * This calculates the similarities of every user pair, across all users
@@ -235,21 +272,45 @@ function Home() {
         {similarities.map((item) => <Typography>{item[0]}: {item[1]}</Typography>)}
         <br />
         <Typography className={classes.subtitleText}>User Pair Similarity:</Typography>
+        <Typography className={classes.subtitleDescription}>For each term of a user's bio, find the max similarity value to the other user's bio's terms.</Typography>
         <br />
-        <Typography>"dushyant-rathore" to "satish-kumar-reddy-madduri" Average: {comparisonA.map(item => item[1]).reduce((a, b) => a + b) / comparisonA.length}</Typography>
-        <Typography>{comparisonA.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+        <Typography>"dushyant-rathore" to "satish-kumar-reddy-madduri" Average: {Object.values(similarityWeightsA).reduce((a, b) => a + b) / Object.keys(similarityWeightsA).length}</Typography>
+        <Typography>{Object.keys(similarityWeightsA).map(item => item + ": " + similarityWeightsA[item]).join(", ")}</Typography>
         <br />
-        <Typography>"satish-kumar-reddy-madduri" to "dushyant-rathore" Average: {comparisonB.map(item => item[1]).reduce((a, b) => a + b) / comparisonB.length}</Typography>
-        <Typography>{comparisonB.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
-        <Typography>Pair Similarity Average: {comparisonA.concat(comparisonB).map(item => item[1]).reduce((a, b) => a + b) / (comparisonA.length + comparisonB.length)}</Typography>
+        <Typography>"satish-kumar-reddy-madduri" to "dushyant-rathore" Average: {Object.values(similarityWeightsB).reduce((a, b) => a + b) / Object.keys(similarityWeightsB).length}</Typography>
+        <Typography>{Object.keys(similarityWeightsB).map(item => item + ": " + similarityWeightsB[item]).join(", ")}</Typography>
+        <Typography>Pair Similarity Average: {Object.values(similarityWeightsA).concat(Object.values(similarityWeightsB)).reduce((a, b) => a + b) / (Object.keys(similarityWeightsA).length + Object.keys(similarityWeightsB).length)}</Typography>
         <br />
         <Typography className={classes.subtitleText}>Category Weights:</Typography>
+        <Typography className={classes.subtitleDescription}>For each term, find the max similarity value to the list of categories.</Typography>
         <br />
         <Typography>"dushyant-rathore" Category Weights</Typography>
-        <Typography>{weightsA.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+        <Typography>{Object.keys(categoryWeightsA).map(item => item + ": " + categoryWeightsA[item]).join(", ")}</Typography>
         <br />
         <Typography>"satish-kumar-reddy-madduri" Category Weights</Typography>
-        <Typography>{weightsB.map(item => item[0] + ": " + item[1]).join(", ")}</Typography>
+        <Typography>{Object.keys(categoryWeightsB).map(item => item + ": " + categoryWeightsB[item]).join(", ")}</Typography>
+        <br />
+        <Typography className={classes.subtitleText}>TF-IDF Weights:</Typography>
+        <Typography className={classes.subtitleDescription}>For each term, calculate the tf-idf score. Score should be between 0 - 1, with 1 representing the most rare words.</Typography>
+        <br />
+        <Typography>"dushyant-rathore" Category Weights</Typography>
+        <Typography>{Object.keys(tfidfWeightsA).map(item => item + ": " + tfidfWeightsA[item]).join(", ")}</Typography>
+        <br />
+        <Typography>"satish-kumar-reddy-madduri" Category Weights</Typography>
+        <Typography>{Object.keys(tfidfWeightsB).map(item => item + ": " + tfidfWeightsB[item]).join(", ")}</Typography>
+        <br />
+        <Typography className={classes.subtitleText}>Final Term Scores:</Typography>
+        <Typography className={classes.subtitleDescription}>Multiply similarity, category, and tf-idf weights to find the final user-pair similarity score.</Typography>
+        <br />
+        <Typography>"dushyant-rathore" Final Weights</Typography>
+        <Typography>Average: {Object.values(finalWeightsA).reduce((a, b) => a + b) / Object.keys(finalWeightsA).length}</Typography>
+        <Typography>{Object.keys(finalWeightsA).map(item => item + ": " + finalWeightsA[item]).join(", ")}</Typography>
+        <br />
+        <Typography>"satish-kumar-reddy-madduri" Final Weights</Typography>
+        <Typography>Average: {Object.values(finalWeightsB).reduce((a, b) => a + b) / Object.keys(finalWeightsB).length}</Typography>
+        <Typography>{Object.keys(finalWeightsB).map(item => item + ": " + finalWeightsB[item]).join(", ")}</Typography>
+        <br />
+        <Typography className={classes.subtitleText}>Final Pair Similarity Score: {Object.values(finalWeightsA).concat(Object.values(finalWeightsB)).reduce((a, b) => a + b) / (Object.keys(finalWeightsA).length + Object.keys(finalWeightsB).length)}</Typography>
         <br />
         <Typography className={classes.subtitleText}>Top 50 User Similarity Pairs:</Typography>
         <br />

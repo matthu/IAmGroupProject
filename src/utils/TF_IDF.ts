@@ -13,7 +13,9 @@ class TFIDF {
       const totalTerms = bio.length;
       terms.forEach((term) => {
         const count = bio.filter((word) => word === term).length;
-        termFrequency[term] = count / totalTerms;
+        // Matthew: shouldn't this just be the log of count + 1? I thought this was taught in the class
+        // termFrequency[term] = count / totalTerms;
+        termFrequency[term] = Math.log10(1 + count);
       });
       return termFrequency;
     }
@@ -25,7 +27,9 @@ class TFIDF {
           count++;
         }
       }
-      return Math.log(bios.length / (count + 1));
+      // Matthew: why count + 1? Shouldn't it just be count since count is not 0 based?
+      // return Math.log(bios.length / (count + 1));
+      return Math.log10(bios.length / count);
     }
   
     public computeTFIDF(): {[id: string]: {[term: string]: number}} {
