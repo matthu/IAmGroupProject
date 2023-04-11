@@ -46,7 +46,8 @@ class BioTokenizer {
       var posTagger = require( 'wink-pos-tagger' );
       var tagger = posTagger();
       var tags: WinkPosTags[] = tagger.tagSentence(bio);
-      console.log(tags);
+      // Uncomment below to see tags in browser console
+      // console.log(tags);
 
       // Filter to lemma stemmed words
       var terms: string[] = tags.filter(tag => tag.lemma && tag.tag == "word").map(tag => tag.lemma);

@@ -16,6 +16,7 @@ class TFIDF {
         // Matthew: shouldn't this just be the log of count + 1? I thought this was taught in the class
         // termFrequency[term] = count / totalTerms;
         termFrequency[term] = Math.log10(1 + count);
+        // termFrequency[term] = count;
       });
       return termFrequency;
     }
