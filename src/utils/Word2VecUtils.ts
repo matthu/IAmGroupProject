@@ -1,363 +1,284 @@
-import wordVecs from "../data/word2Vecs.json";
-// import wordVecs from "../data/gloveVecs.json";
+// import wordVecs from "../data/word2Vecs.json";
+import wordVecs from "../data/gloveVecs.json";
+import { getConcretenessValues } from "./ConcretenessUtils";
+
+export const similarityWeight = 1.0;
+export const categoryWeight = 1.0;
+export const concretenessWeight = 0.5;
+export const tfidfWeight = 2.0;
 
 /** A utility class for calculating simularity scores */
-class Word2VecUtils {
 
-  similarityMin = 0.0;
-  kTopSimilarWords = 5;
+const similarityMin = 0.0;
+const kTopSimilarWords = 5;
 
-  /** Get a term's vec */
-  getTermVec(term: string): number[] {
-    if ((wordVecs as any).hasOwnProperty(term)) {
-      return (wordVecs as any)[term];
-    }
-    else {
-      return [];
-    }
+/** Get a term's vec */
+export function getTermVec(term: string): number[] {
+  if ((wordVecs as any).hasOwnProperty(term)) {
+    return (wordVecs as any)[term];
   }
-
-  /** Get n most similar user terms to a specific term */
-  getNSimilarTermsToTerm(n: number, userTerms: {[id: string]: string[]}, term: string) {
-    var vec = this.getTermVec(term);
-
-    var termSimilarities: {[id: string]: [string, number][]} = {};
-    for (var username of Object.keys(userTerms)) {
-      var sims: [string, number][] = [];
-      for (var userTerm of userTerms[username]) {
-        var termVec = this.getTermVec(userTerm);
-        var sim = this.getCosSim(vec, termVec);
-        sims.push([userTerm, sim]);
-      }
-
-      sims.sort((a, b) => {
-        return b[1] - a[1]; 
-      });
-      sims = sims.slice(0, n);
-
-      termSimilarities[username] = sims;
-    }
-    return termSimilarities;
+  else {
+    return [];
   }
+}
 
-  /** This calculates the similarity of one user's terms to another user's terms */
-  getComparisonOfTermsList(userA: string[], userB: string[]) {
+/** Get n most similar user terms to a specific term */
+export function getNSimilarTermsToTerm(n: number, userTerms: {[id: string]: string[]}, term: string) {
+  var vec = getTermVec(term);
+
+  var termSimilarities: {[id: string]: [string, number][]} = {};
+  for (var username of Object.keys(userTerms)) {
     var sims: [string, number][] = [];
-    for (const i of userA) {
-      const iVec = this.getTermVec(i);
-      var termSims: number[] = userB.map(term => this.getCosSim(iVec, this.getTermVec(term)));
-      var sim = Math.max(...termSims)
-      // Add similarity if above min
-      sim = (sim >= this.similarityMin) ? sim : 0;
-      sims.push([i, sim]);
-    }
-    return sims;
-  }
-
-  /** This calculates the similarity of one user's terms to another user's terms */
-  getComparisonOfTerms(userA: string[], userB: string[]) {
-    var sims: {[id: string]: number} = {};
-    for (const i of userA) {
-      const iVec = this.getTermVec(i);
-      var termSims: number[] = userB.map(term => this.getCosSim(iVec, this.getTermVec(term)));
-      var sim = Math.max(...termSims)
-      // Add similarity if above min
-      sim = (sim >= this.similarityMin) ? sim : 0;
-      sims[i] = sim;
-    }
-    return sims;
-  }
-
-  getUserCategoryWeightsList(user: string[], terms: string[]) {
-    var sims: [string, number][] = [];
-    for (const userTerm of user) {
-      const iVec = this.getTermVec(userTerm);
-      var termSims: number[] = terms.map(term => this.getCosSim(iVec, this.getTermVec(term)));
-      var sim = Math.max(...termSims)
-      // Add similarity if above min
-      sim = (sim >= this.similarityMin) ? sim : 0;
+    for (var userTerm of userTerms[username]) {
+      var termVec = getTermVec(userTerm);
+      var sim = getCosSim(vec, termVec);
       sims.push([userTerm, sim]);
     }
+
     sims.sort((a, b) => {
       return b[1] - a[1]; 
     });
-    return sims;
-  }
+    sims = sims.slice(0, n);
 
-  getUserCategoryWeights(user: string[], terms: string[]) {
-    var sims: {[id: string]: number} = {};
-    for (const userTerm of user) {
-      const iVec = this.getTermVec(userTerm);
-      var termSims: number[] = terms.map(term => this.getCosSim(iVec, this.getTermVec(term)));
-      const sim = Math.max(...termSims)
-      // Add similarity if above min
-      sims[userTerm] = (sim >= this.similarityMin) ? sim : 0;
-    }
-    return sims;
+    termSimilarities[username] = sims;
   }
+  return termSimilarities;
+}
 
-  /** This calculates the similarity between two users' bio terms */
-  getSimilarityOfTwoUsers(userA: string[], userB: string[]) {
-    var sims: number[] = [];
-    for (const i of userA) {
-      const iVec = this.getTermVec(i);
-      var termSims: number[] = userB.map(term => this.getCosSim(iVec, this.getTermVec(term)));
-      var sim = Math.max(...termSims)
-      // Add similarity if above min
-      sim = (sim >= this.similarityMin) ? sim : 0;
-      sims.push(sim);
-    }
-    for (const i of userB) {
-      const iVec = this.getTermVec(i);
-      var termSims: number[] = userA.map(term => this.getCosSim(iVec, this.getTermVec(term)));
-      var sim = Math.max(...termSims)
-      // Add similarity if above min
-      sim = (sim >= this.similarityMin) ? sim : 0;
-      sims.push(sim);
-    }
-    var average = sims.reduce((a, b) => a + b) / sims.length;
-    return average;
+/** This calculates the similarity of one user's terms to another user's terms */
+export function getComparisonOfTermsList(userA: string[], userB: string[]) {
+  var sims: [string, number][] = [];
+  for (const i of userA) {
+    const iVec = getTermVec(i);
+    var termSims: number[] = userB.map(term => getCosSim(iVec, getTermVec(term)));
+    var sim = Math.max(...termSims)
+    // Add similarity if above min
+    sim = (sim >= similarityMin) ? sim : 0;
+    sims.push([i, sim]);
   }
+  return sims;
+}
 
-  /**
-   * This calculates the similarities of every user pair, across all users
-   * Format is [usernameA, usernameB, similarityScore][]
-   */
-  getSimilarityOfAllUsers(userTerms: {[id: string]: string[]}) {
-    var pairsEncountered: string[] = []
-    var sims: [string, string, number][] = [];
-    for (var usernameA of Object.keys(userTerms)) {
-      var userA = userTerms[usernameA];
-      for (var usernameB of Object.keys(userTerms)) {
-        if (usernameB !== usernameA && !pairsEncountered.includes(usernameB + usernameA)) {
-          var userB = userTerms[usernameB];
-          var simScore = this.getSimilarityOfTwoUsers(userA, userB);
-          sims.push([usernameA, usernameB, simScore]);
-          pairsEncountered.push(usernameA + usernameB);
-        }
+/** This calculates the similarity of one user's terms to another user's terms */
+export function getComparisonOfTerms(userA: string[], userB: string[]) {
+  var sims: {[id: string]: number} = {};
+  for (const i of userA) {
+    const iVec = getTermVec(i);
+    var termSims: number[] = userB.map(term => getCosSim(iVec, getTermVec(term)));
+    var sim = Math.max(...termSims)
+    // Add similarity if above min
+    sim = (sim >= similarityMin) ? sim : 0;
+    sims[i] = sim;
+  }
+  return sims;
+}
+
+export function getUserCategoryWeightsList(user: string[], terms: string[]) {
+  var sims: [string, number][] = [];
+  for (const userTerm of user) {
+    const iVec = getTermVec(userTerm);
+    var termSims: number[] = terms.map(term => getCosSim(iVec, getTermVec(term)));
+    var sim = Math.max(...termSims)
+    // Add similarity if above min
+    sim = (sim >= similarityMin) ? sim : 0;
+    sims.push([userTerm, sim]);
+  }
+  sims.sort((a, b) => {
+    return b[1] - a[1]; 
+  });
+  return sims;
+}
+
+export function getUserCategoryWeights(user: string[], terms: string[]) {
+  var sims: {[id: string]: number} = {};
+  for (const userTerm of user) {
+    const iVec = getTermVec(userTerm);
+    var termSims: number[] = terms.map(term => getCosSim(iVec, getTermVec(term)));
+    const sim = Math.max(...termSims)
+    // Add similarity if above min
+    sims[userTerm] = (sim >= similarityMin) ? sim : 0;
+  }
+  return sims;
+}
+
+/** This calculates the similarity between two users' bio terms */
+export function getSimilarityOfTwoUsers(userA: string[], userB: string[]) {
+  var sims: number[] = [];
+  for (const i of userA) {
+    const iVec = getTermVec(i);
+    var termSims: number[] = userB.map(term => getCosSim(iVec, getTermVec(term)));
+    var sim = Math.max(...termSims)
+    // Add similarity if above min
+    sim = (sim >= similarityMin) ? sim : 0;
+    sims.push(sim);
+  }
+  for (const i of userB) {
+    const iVec = getTermVec(i);
+    var termSims: number[] = userA.map(term => getCosSim(iVec, getTermVec(term)));
+    var sim = Math.max(...termSims)
+    // Add similarity if above min
+    sim = (sim >= similarityMin) ? sim : 0;
+    sims.push(sim);
+  }
+  var average = sims.reduce((a, b) => a + b) / sims.length;
+  return average;
+}
+
+/**
+ * This calculates the similarities of every user pair, across all users
+ * Format is [usernameA, usernameB, similarityScore][]
+ */
+export function getSimilarityOfAllUsers(userTerms: {[id: string]: string[]}) {
+  var pairsEncountered: string[] = []
+  var sims: [string, string, number][] = [];
+  for (var usernameA of Object.keys(userTerms)) {
+    var userA = userTerms[usernameA];
+    for (var usernameB of Object.keys(userTerms)) {
+      if (usernameB !== usernameA && !pairsEncountered.includes(usernameB + usernameA)) {
+        var userB = userTerms[usernameB];
+        var simScore = getSimilarityOfTwoUsers(userA, userB);
+        sims.push([usernameA, usernameB, simScore]);
+        pairsEncountered.push(usernameA + usernameB);
       }
     }
-    sims.sort((a, b) => {
-      return b[2] - a[2]; 
-    });
-    return sims;
   }
+  sims.sort((a, b) => {
+    return b[2] - a[2]; 
+  });
+  return sims;
+}
 
-  /**
-   * This calculates the final weight of a single user, given similarity, category, and tf-idf weights
-   */
-  getFinalWeightOfUser(similarityWeights: {[id: string]: number}, categoryWeights: {[id: string]: number}, tfidfWeights: {[id: string]: number}) {
-    let finalWeights: [string, number][] = [];
-    for (const term of Object.keys(similarityWeights)) {
-      const similarity = similarityWeights[term] ?? 0;
-      const category = categoryWeights[term] ?? 0;
-      const tfidf = tfidfWeights[term] ?? 0;
-      finalWeights.push([term, (similarity) * (category) * (tfidf)]);
+/** Get terms filtered to those in our word2vec or glove vocabulary */
+export function filterTerms(userTerms: {[id: string]: string[]}) {
+  var filteredTerms: {[id: string]: string[]} = {};
+  for (var username of Object.keys(userTerms)) {
+    filteredTerms[username] = userTerms[username].filter(term => (wordVecs as any).hasOwnProperty(term))
+  }
+  return filteredTerms;
+}
+
+export function diffN(n: number, word1: string, word2: string) {
+  for (var ai = 1; ai < arguments.length; ai++) {
+    if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
+      return [false, arguments[ai]];
     }
-    finalWeights = finalWeights.sort((a, b) => {
-      return b[1] - a[1]; 
-    });
-    return finalWeights.slice(0, this.kTopSimilarWords);
   }
 
-  /**
-   * This calculates the similarities of every user pair, across all users
-   * Format is [usernameA, usernameB, similarityScore][]
-   */
-  getFinalSimilarityOfAllUsers(userTerms: {[id: string]: string[]}, categories: string[], tfidfScores: {[id: string]: {[term: string]: number; }}) {
-    // Precalculate category and tf-idf user weights
-    var userWeights: {[username: string]: {[term: string]: number}} = {};
-    for (var username of Object.keys(userTerms)) {
-      userWeights[username] = {};
-      var categoryWeights = this.getUserCategoryWeights(userTerms[username], categories);
-      var tfidfWeights = tfidfScores[username];
-      for (var term of userTerms[username]) {
-        userWeights[username][term] = categoryWeights[term] * tfidfWeights[term];
-      }
+  return getNClosestMatches(
+    n,
+    subVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
+  ); 
+}
+
+export function composeN(n: number, word1: string, word2: string) {
+  for (var ai = 1; ai < arguments.length; ai++) {
+    if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
+      return [false, arguments[ai]];
     }
-    
-    // Now compute similarities between all users, adding in the precalculated category and user weights
-    var pairsEncountered: string[] = []
-    var sims: [string, string, number][] = [];
-    for (var usernameA of Object.keys(userTerms)) {
-      var userA = userTerms[usernameA];
-      for (var usernameB of Object.keys(userTerms)) {
-        if (usernameB !== usernameA && !pairsEncountered.includes(usernameB + usernameA)) {
-          var userB = userTerms[usernameB];
-          var weights: number[] = [];
+  }
 
-          // Get comparison of A to B
-          var simScoresA = this.getComparisonOfTerms(userA, userB);
-          // Add weights
-          var weightsA: number[] = [];
-          for (var simTerm of Object.keys(simScoresA)) {
-            var weight = userWeights[usernameA][simTerm];
-            weightsA.push(simScoresA[simTerm] * weight);
-          }
-          weightsA.sort((a, b) => {
-            return b - a; 
-          });
-          weights = weights.concat(weightsA.slice(0, this.kTopSimilarWords));
+  return getNClosestMatches(
+    n,
+    addVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
+  ); 
+}
 
-          // Get comparison of B to A
-          var simScoresB = this.getComparisonOfTerms(userB, userA);
-          // Add weights
-          var weightsB: number[] = [];
-          for (var simTerm of Object.keys(simScoresB)) {
-            var weight = userWeights[usernameB][simTerm];
-            weightsB.push(simScoresB[simTerm] * weight);
-          }
-          weightsB.sort((a, b) => {
-            return b - a; 
-          });
-          weights = weights.concat(weightsB.slice(0, this.kTopSimilarWords));
-
-          var score = weights.reduce((a, b) => a + b) / (this.kTopSimilarWords * 2);
-          sims.push([usernameA, usernameB, score]);
-          pairsEncountered.push(usernameA + usernameB);
-        }
-      }
+export function mixAndMatchN(n: number, sub1: string, sub2: string, add1: string) {
+  for (var ai = 1; ai < arguments.length; ai++) {
+    if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
+      return [false, arguments[ai]];
     }
-    sims.sort((a, b) => {
-      return b[2] - a[2]; 
-    });
-    return sims;
   }
 
-  /** Get terms filtered to those in our word2vec or glove vocabulary */
-  filterTerms(userTerms: {[id: string]: string[]}) {
-    var filteredTerms: {[id: string]: string[]} = {};
-    for (var username of Object.keys(userTerms)) {
-      filteredTerms[username] = userTerms[username].filter(term => (wordVecs as any).hasOwnProperty(term))
-    }
-    return filteredTerms;
+  return getNClosestMatches(
+    n,
+    addVecs((wordVecs as any)[add1], subVecs((wordVecs as any)[sub1], (wordVecs as any)[sub2]))
+  ); 
+}
+
+/**
+ * Find similar words, modified to find in all 25k words
+ */
+ export function findSimilarWords(n: number, word: string) {
+  var vec = [];
+  if ((wordVecs as any).hasOwnProperty(word)) {
+    vec = (wordVecs as any)[word];
+  }
+  else {
+    return [];
   }
 
-  diffN(n: number, word1: string, word2: string) {
-    for (var ai = 1; ai < arguments.length; ai++) {
-      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
-        return [false, arguments[ai]];
-      }
-    }
+  return getNClosestMatches(
+    n, vec
+  );
+}
 
-    return this.getNClosestMatches(
-      n,
-      this.subVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
-    ); 
+export function getNClosestMatches(n: number, vec: number[]) {
+  var sims: [string, number][] = [];
+  for (var word in (wordVecs as any)) {
+    var sim = getCosSim(vec, (wordVecs as any)[word]);
+    sims.push([word, sim]);
   }
+  sims.sort((a, b) => {
+    return b[1] - a[1]; 
+  });
+  return sims.slice(0, n);
+}
 
-  composeN(n: number, word1: string, word2: string) {
-    for (var ai = 1; ai < arguments.length; ai++) {
-      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
-        return [false, arguments[ai]];
-      }
-    }
-
-    return this.getNClosestMatches(
-      n,
-      this.addVecs((wordVecs as any)[word1], (wordVecs as any)[word2])
-    ); 
+export function getNClosestMatchesOnVec(n: number, vec: number[], wordVec: any) {
+  var sims: [string, number][] = [];
+  for (var word in wordVec) {
+    var sim = getCosSim(vec, wordVec[word]);
+    sims.push([word, sim]);
   }
+  sims.sort((a, b) => {
+    return b[1] - a[1]; 
+  });
+  return sims.slice(0, n);
+}
 
-  mixAndMatchN(n: number, sub1: string, sub2: string, add1: string) {
-    for (var ai = 1; ai < arguments.length; ai++) {
-      if (!(wordVecs as any).hasOwnProperty(arguments[ai])) {
-        return [false, arguments[ai]];
-      }
-    }
+/********************
+ * helper functions */
+export function getCosSim(f1: number[], f2: number[]) {
+  return Math.abs(f1.reduce((sum, a, idx) => {
+    return sum + a*f2[idx];
+  }, 0)/(mag(f1)*mag(f2))); //magnitude is 1 for all feature vectors
+}
 
-    return this.getNClosestMatches(
-      n,
-      this.addVecs((wordVecs as any)[add1], this.subVecs((wordVecs as any)[sub1], (wordVecs as any)[sub2]))
-    ); 
-  }
+export function mag(a: number[]) {
+  return Math.sqrt(a.reduce((sum, val) => {
+    return sum + val*val;  
+  }, 0));
+}
 
-  /**
-   * Find similar words, modified to find in all 25k words
-   */
-  findSimilarWords(n: number, word: string) {
-    var vec = [];
-    if ((wordVecs as any).hasOwnProperty(word)) {
-      vec = (wordVecs as any)[word];
-    }
-    else {
-      return [];
-    }
+export function norm(a: number[]) {
+  var magValue = mag(a);
+  return a.map((val) => {
+    return val/magValue; 
+  });
+}
 
-    return this.getNClosestMatches(
-      n, vec
-    );
-  }
+export function addVecs(a: number[], b: number[]) {
+  return a.map((val, idx) => {
+    return val + b[idx]; 
+  });
+}
 
-  getNClosestMatches(n: number, vec: number[]) {
-    var sims: [string, number][] = [];
-    for (var word in (wordVecs as any)) {
-      var sim = this.getCosSim(vec, (wordVecs as any)[word]);
-      sims.push([word, sim]);
-    }
-    sims.sort((a, b) => {
-      return b[1] - a[1]; 
-    });
-    return sims.slice(0, n);
-  }
+export function subVecs(a: number[], b: number[]) {
+  return a.map((val, idx) => {
+    return val - b[idx]; 
+  });
+}
 
-  getNClosestMatchesOnVec(n: number, vec: number[], wordVec: any) {
-    var sims: [string, number][] = [];
-    for (var word in wordVec) {
-      var sim = this.getCosSim(vec, wordVec[word]);
-      sims.push([word, sim]);
-    }
-    sims.sort((a, b) => {
-      return b[1] - a[1]; 
-    });
-    return sims.slice(0, n);
-  }
-
-  /********************
-   * helper functions */
-  getCosSim(f1: number[], f2: number[]) {
-    return Math.abs(f1.reduce((sum, a, idx) => {
-      return sum + a*f2[idx];
-    }, 0)/(this.mag(f1)*this.mag(f2))); //magnitude is 1 for all feature vectors
-  }
-
-  mag(a: number[]) {
-    return Math.sqrt(a.reduce((sum, val) => {
-      return sum + val*val;  
-    }, 0));
-  }
-
-  norm(a: number[]) {
-    var magValue = this.mag(a);
-    return a.map((val) => {
-      return val/magValue; 
-    });
-  }
-
-  addVecs(a: number[], b: number[]) {
-    return a.map((val, idx) => {
-      return val + b[idx]; 
-    });
-  }
-
-  subVecs(a: number[], b: number[]) {
-    return a.map((val, idx) => {
-      return val - b[idx]; 
-    });
-  }
-
-  getVecs() {
-    return {
-      diffN: this.diffN,
-      composeN: this.composeN,
-      findSimilarWords: this.findSimilarWords,
-      mixAndMatchN: this.mixAndMatchN,
-      addVecs: this.addVecs,
-      subVecs: this.subVecs,
-      getNClosestMatches: this.getNClosestMatches,
-      getCosSim: this.getCosSim
-    };
-  }
-};
-
-export default Word2VecUtils; 
+// export function getVecs() {
+//   return {
+//     diffN: diffN,
+//     composeN: composeN,
+//     findSimilarWords: findSimilarWords,
+//     mixAndMatchN: mixAndMatchN,
+//     addVecs: addVecs,
+//     subVecs: subVecs,
+//     getNClosestMatches: getNClosestMatches,
+//     getCosSim: getCosSim
+//   };
+// }

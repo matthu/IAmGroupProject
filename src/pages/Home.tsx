@@ -2,11 +2,13 @@
  * Main home page that displays introduction content
  */
 
-import { makeStyles, TextField, Typography } from '@material-ui/core';
+import { Link, makeStyles, TextField, Typography } from '@material-ui/core';
 import { useMemo, useState } from 'react';
-import BioTokenizer from '../utils/BioTokenizer';
-import Word2VecUtils from '../utils/Word2VecUtils';
-import { tfidfScores } from '../utils/TF_IDF';
+import { getBios, getBioTokens } from '../utils/BioTokenizer';
+import { getConcretenessValues } from '../utils/ConcretenessUtils';
+import { getFinalSimilarityOfAllUsers, getFinalWeightOfUser } from '../utils/ScoringUtils';
+import { tfidfScores } from '../utils/TfidfUtils';
+import { filterTerms, findSimilarWords, getComparisonOfTerms, getNSimilarTermsToTerm, getSimilarityOfAllUsers, getUserCategoryWeights } from '../utils/Word2VecUtils';
 
 type Scores = Record<string, Record<string, number>>;
 
@@ -46,6 +48,8 @@ function Home() {
   /** The word to find similar words to */
   const [localWord, setLocalWord] = useState("")
   const [word, setWord] = useState("")
+  const [localFindUsersTerm, setLocalFindUsersTerm] = useState("")
+  const [findUsersTerm, setFindUsersTerm] = useState("")
   const [filteredScores, setFilteredScores] = useState<Scores>({});
   const [filteredNames, setFilteredNames] = useState<Scores>({});
   const [inputValue, setInputValue] = useState('');
@@ -56,55 +60,50 @@ function Home() {
   const [localUserB, setLocalUserB] = useState("")
   const [userB, setUserB] = useState("")
 
-  /** A utility class for calculating simularity scores */
-  const word2VecUtility = useMemo(() => {
-    return new Word2VecUtils();
-  }, [])
-
-  /** A utility class for extracting tokens from bios */
-  const bioTokenizer = useMemo(() => {
-    return new BioTokenizer();
-  }, [])
-
   /** Finding similar words */
   const similarities = useMemo(() => {
-    return word2VecUtility.findSimilarWords(10, word);
+    return findSimilarWords(10, word);
   }, [word])
 
   /** The raw bios of users */
   const bios: { [username: string]: string } = useMemo(() => {
-    return bioTokenizer?.getBios();
-  }, [bioTokenizer])
+    return getBios();
+  }, [])
 
   /** The extracted tokens from bios */
   const bioTokens: { [username: string]: string[] } = useMemo(() => {
-    return bioTokenizer?.getBioTokens();
-  }, [bioTokenizer])
+    return getBioTokens();
+  }, [])
 
   /** The terms filtered to those in our word2vec or glove vocabulary */
   const filteredTerms: { [username: string]: string[] } = useMemo(() => {
-    return word2VecUtility?.filterTerms(bioTokens);
-  }, [word2VecUtility])
+    return filterTerms(bioTokens);
+  }, [bioTokens])
 
   /** These are interest weights to try to find most valuable words to us */
 
   const categories = ["sports", "programming", "hobby", "food"];
 
   const sportWeights = useMemo(() => {
-    return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "sports");
+    return getNSimilarTermsToTerm(10, filteredTerms, "sports");
   }, [filteredTerms])
 
   const programmingWeights = useMemo(() => {
-    return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "programming");
+    return getNSimilarTermsToTerm(10, filteredTerms, "programming");
   }, [filteredTerms])
 
   const hobbyWeights = useMemo(() => {
-    return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "hobby");
+    return getNSimilarTermsToTerm(10, filteredTerms, "hobby");
   }, [filteredTerms])
 
   const foodWeights = useMemo(() => {
-    return word2VecUtility.getNSimilarTermsToTerm(10, filteredTerms, "food");
+    return getNSimilarTermsToTerm(10, filteredTerms, "food");
   }, [filteredTerms])
+
+  /** The users that have a specific term */
+  const foundUsers: string[] = useMemo(() => {
+    return Object.keys(filteredTerms).filter(username => filteredTerms[username].includes(findUsersTerm))
+  }, [findUsersTerm, filteredTerms])
 
   /** This finds all unique terms in the vocabulary */
   const uniqueTerms = useMemo(() => {
@@ -121,14 +120,14 @@ function Home() {
 
   const similarityWeightsA = useMemo(() => {
     if (userA && userB) {
-      return word2VecUtility.getComparisonOfTerms(filteredTerms[userA], filteredTerms[userB]);
+      return getComparisonOfTerms(filteredTerms[userA], filteredTerms[userB]);
     }
     return {};
   }, [filteredTerms, userA, userB])
 
   const similarityWeightsB = useMemo(() => {
     if (userA && userB) {
-      return word2VecUtility.getComparisonOfTerms(filteredTerms[userB], filteredTerms[userA]);
+      return getComparisonOfTerms(filteredTerms[userB], filteredTerms[userA]);
     }
     return {};
   }, [filteredTerms, userA, userB])
@@ -137,14 +136,30 @@ function Home() {
 
   const categoryWeightsA = useMemo(() => {
     if (userA && userB) {
-      return word2VecUtility.getUserCategoryWeights(filteredTerms[userA], categories);
+      return getUserCategoryWeights(filteredTerms[userA], categories);
     }
     return {};
   }, [filteredTerms, userA])
 
   const categoryWeightsB = useMemo(() => {
     if (userA && userB) {
-      return word2VecUtility.getUserCategoryWeights(filteredTerms[userB], categories);
+      return getUserCategoryWeights(filteredTerms[userB], categories);
+    }
+    return {};
+  }, [filteredTerms, userB])
+
+  /** These calculate the weights from the categories for the two users */
+
+  const concretenessWeightsA = useMemo(() => {
+    if (filteredTerms && filteredTerms[userA]) {
+      return getConcretenessValues(filteredTerms[userA]);
+    }
+    return {};
+  }, [filteredTerms, userA])
+
+  const concretenessWeightsB = useMemo(() => {
+    if (filteredTerms && filteredTerms[userB]) {
+      return getConcretenessValues(filteredTerms[userB]);
     }
     return {};
   }, [filteredTerms, userB])
@@ -168,19 +183,19 @@ function Home() {
   /** These calculate the weights from the categories for the two users */
 
   const finalWeightsA = useMemo(() => {
-    return word2VecUtility.getFinalWeightOfUser(similarityWeightsA, categoryWeightsA, tfidfWeightsA);
-  }, [similarityWeightsA, categoryWeightsA, tfidfWeightsA])
+    return getFinalWeightOfUser(similarityWeightsA, categoryWeightsA, tfidfWeightsA, concretenessWeightsA);
+  }, [similarityWeightsA, categoryWeightsA, tfidfWeightsA, concretenessWeightsA])
 
   const finalWeightsB = useMemo(() => {
-    return word2VecUtility.getFinalWeightOfUser(similarityWeightsB, categoryWeightsB, tfidfWeightsB);
-  }, [similarityWeightsB, categoryWeightsB, tfidfWeightsB])
+    return getFinalWeightOfUser(similarityWeightsB, categoryWeightsB, tfidfWeightsB, concretenessWeightsB);
+  }, [similarityWeightsB, categoryWeightsB, tfidfWeightsB, concretenessWeightsB])
   
   /** 
    * This calculates the similarities of every user pair, across all users
    * Format is [userA, userB, similarityScore][]
    */
   const userSimilarities: [string, string, number][] = useMemo(() => {
-    return word2VecUtility.getSimilarityOfAllUsers(filteredTerms).slice(0, 50);
+    return getSimilarityOfAllUsers(filteredTerms).slice(0, 50);
   }, [filteredTerms])
 
   /** 
@@ -188,7 +203,7 @@ function Home() {
    * Format is [userA, userB, similarityScore][]
    */
    const userFinalSimilarities: [string, string, number][] = useMemo(() => {
-    return word2VecUtility.getFinalSimilarityOfAllUsers(filteredTerms, categories, tfidfScores).slice(0, 50);
+    return getFinalSimilarityOfAllUsers(filteredTerms, categories, tfidfScores).slice(0, 50);
   }, [filteredTerms])
 
   function handleLookup(event: React.ChangeEvent<HTMLInputElement>) {
@@ -247,9 +262,22 @@ function Home() {
           <br />
           <Typography className={classes.subtitleText}>Lookups:</Typography>
           <br />
+          <TextField
+            label="Lookup Users with Term"
+            variant="outlined"
+            onKeyUp={(e) => {
+              if (e.keyCode === 13) {
+                setFindUsersTerm(localFindUsersTerm);
+              }
+            }}
+            onChange={(e) => setLocalFindUsersTerm(e.target.value)}
+          />
+          {foundUsers.map((username) => <Typography>{username}</Typography>)}
+          <br />
+          <br />
           <form onSubmit={handleTerm}>
             <TextField
-              label="Lookup Term"
+              label="Lookup TF-IDF Term"
               variant="outlined"
               value={inputValue}
               onChange={handleLookup}
@@ -329,6 +357,14 @@ function Home() {
           <>
             <br />
             <br />
+            <Typography className={classes.subtitleText}>Original Slack Bios:</Typography>
+            <br />
+            <Typography>{userA}:</Typography>
+            <Typography>{bios[userA]}</Typography>
+            <br />
+            <Typography>{userB}:</Typography>
+            <Typography>{bios[userB]}</Typography>
+            <br />
             <Typography className={classes.subtitleText}>User Pair Similarity:</Typography>
             <Typography className={classes.subtitleDescription}>For each term of a user's bio, find the max similarity value to the other user's bio's terms.</Typography>
             <br />
@@ -347,6 +383,15 @@ function Home() {
             <br />
             <Typography>{userB}:</Typography>
             <Typography>{Object.keys(categoryWeightsB).sort((a, b) => categoryWeightsB[a] > categoryWeightsB[b] ? -1 : 1).map(item => item + ": " + categoryWeightsB[item]).join(", ")}</Typography>
+            <br />
+            <Typography className={classes.subtitleText}>Concreteness Weights:</Typography>
+            <Typography className={classes.subtitleDescription}>For each term, find the concreteness value.</Typography>
+            <br />
+            <Typography>{userA}:</Typography>
+            <Typography>{Object.keys(concretenessWeightsA).sort((a, b) => concretenessWeightsA[a] > concretenessWeightsA[b] ? -1 : 1).map(item => item + ": " + concretenessWeightsA[item]).join(", ")}</Typography>
+            <br />
+            <Typography>{userB}:</Typography>
+            <Typography>{Object.keys(concretenessWeightsB).sort((a, b) => concretenessWeightsB[a] > concretenessWeightsB[b] ? -1 : 1).map(item => item + ": " + concretenessWeightsB[item]).join(", ")}</Typography>
             <br />
             <Typography className={classes.subtitleText}>TF-IDF Weights:</Typography>
             <Typography className={classes.subtitleDescription}>For each term, calculate the tf-idf score. Score should be between 0 - 1, with 1 representing the most rare words.</Typography>
@@ -375,7 +420,8 @@ function Home() {
         <br />
         <Typography className={classes.subtitleText}>Top 50 User Similarity Pairs:</Typography>
         <br />
-        {userFinalSimilarities.map(item => <Typography>{item[0] + " - " + item[1] + ": " + item[2]}</Typography>)}
+        {userFinalSimilarities.map(item =>
+          <Typography><div style={{ display: "inline-block", width: "400px" }}>{item[0] + " - " + item[1] + ": "}</div><div style={{ display: "inline-block", width: "200px" }}>{item[2]}</div><Link onClick={() => { setUserA(item[0]); setUserB(item[1]); }}>Compare</Link></Typography>)}
         <br />
         <Typography className={classes.subtitleText}>User Bio Tokens:</Typography>
         <br />

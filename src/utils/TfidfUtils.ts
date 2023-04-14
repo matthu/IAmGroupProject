@@ -1,6 +1,6 @@
-import BioTokenizer from '../utils/BioTokenizer';
+import { getBioTokens } from "./BioTokenizer";
 
-class TFIDF {
+class TfidfUtils {
 
     private bioTokens: {[id: string]: string[]};
   
@@ -53,11 +53,10 @@ class TFIDF {
       return tfidf;
     }
   }
+
+  const bioTokens = getBioTokens();
   
-  const tokenizer = new BioTokenizer();
-  const bioTokens = tokenizer.getBioTokens();
-  
-  const tfidf = new TFIDF(bioTokens);
+  const tfidf = new TfidfUtils(bioTokens);
   export const tfidfScores = tfidf.computeTFIDF();
 
   
