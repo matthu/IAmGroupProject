@@ -4,8 +4,6 @@
 
 import { makeStyles, Tab, Tabs } from '@material-ui/core';
 import React, { useState } from 'react';
-import Sentiment from '../subpages/Sentiment';
-import Storyline from '../subpages/Storyline';
 
 export const enum SUB_PAGE {
   data = 'data',
