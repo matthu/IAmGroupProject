@@ -359,6 +359,7 @@ function Home() {
           onChange={(e) => setLocalUserB(e.target.value)}
           style={{ marginLeft: "20px" }}
         />
+        <div id='comparison'>
         {userA && userB &&
           <>
             <br />
@@ -421,7 +422,7 @@ function Home() {
             <br />
             <Typography className={classes.subtitleText}>Final Pair Similarity Score: {finalWeightsA.concat(finalWeightsB).map(item => item[1]).reduce((a, b) => a + b) / (finalWeightsA.length + finalWeightsB.length)}</Typography>
           </>
-        }
+        }</div>
         <br />
         <br />
         <Typography className={classes.subtitleText}>User Groupings:</Typography>
@@ -433,7 +434,7 @@ function Home() {
         <Typography className={classes.subtitleText}>Top 50 User Similarity Pairs:</Typography>
         <br />
         {userFinalSimilarities.slice(0, 50).map(item =>
-          <Typography><div style={{ display: "inline-block", width: "400px" }}>{item[0] + " - " + item[1] + ": "}</div><div style={{ display: "inline-block", width: "200px" }}>{item[2]}</div><Link onClick={() => { setUserA(item[0]); setUserB(item[1]); }}>Compare</Link></Typography>)}
+          <Typography><div style={{ display: "inline-block", width: "400px" }}>{item[0] + " - " + item[1] + ": "}</div><div style={{ display: "inline-block", width: "200px" }}>{item[2]}</div><Link onClick={() => { setUserA(item[0]); setUserB(item[1]); window.location.href="#comparison"}}>Compare</Link></Typography>)}
         <br />
         <Typography className={classes.subtitleText}>User Bio Tokens:</Typography>
         <br />
