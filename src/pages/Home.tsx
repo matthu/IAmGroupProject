@@ -6,6 +6,7 @@ import { Link, makeStyles, TextField, Typography } from '@material-ui/core';
 import { useMemo, useState } from 'react';
 import { getBios, getBioTokens } from '../utils/BioTokenizer';
 import { getConcretenessValues } from '../utils/ConcretenessUtils';
+import { getOptimalGroups } from '../utils/GroupingUtils';
 import { getFinalSimilarityOfAllUsers, getFinalWeightOfUser } from '../utils/ScoringUtils';
 import { tfidfScores } from '../utils/TfidfUtils';
 import { filterTerms, findSimilarWords, getComparisonOfTerms, getNSimilarTermsToTerm, getSimilarityOfAllUsers, getUserCategoryWeights } from '../utils/Word2VecUtils';
@@ -203,8 +204,13 @@ function Home() {
    * Format is [userA, userB, similarityScore][]
    */
    const userFinalSimilarities: [string, string, number][] = useMemo(() => {
-    return getFinalSimilarityOfAllUsers(filteredTerms, categories, tfidfScores).slice(0, 50);
+    return getFinalSimilarityOfAllUsers(filteredTerms, categories, tfidfScores);
   }, [filteredTerms])
+
+
+  const userGroupings: string[][] = useMemo(() => {
+    return getOptimalGroups(userFinalSimilarities);
+  }, [userFinalSimilarities])
 
   function handleLookup(event: React.ChangeEvent<HTMLInputElement>) {
     setInputValue(event.target.value.trim());
@@ -418,9 +424,15 @@ function Home() {
         }
         <br />
         <br />
+        <Typography className={classes.subtitleText}>User Groupings:</Typography>
+        <br />
+        {userGroupings.map((item, index) =>
+          <Typography>{"Group " + (index + 1) + ": " + item.join(", ")}</Typography>)}
+        <br />
+        <br />
         <Typography className={classes.subtitleText}>Top 50 User Similarity Pairs:</Typography>
         <br />
-        {userFinalSimilarities.map(item =>
+        {userFinalSimilarities.slice(0, 50).map(item =>
           <Typography><div style={{ display: "inline-block", width: "400px" }}>{item[0] + " - " + item[1] + ": "}</div><div style={{ display: "inline-block", width: "200px" }}>{item[2]}</div><Link onClick={() => { setUserA(item[0]); setUserB(item[1]); }}>Compare</Link></Typography>)}
         <br />
         <Typography className={classes.subtitleText}>User Bio Tokens:</Typography>
