@@ -1,16 +1,9 @@
 // import wordVecs from "../data/word2Vecs.json";
 import wordVecs from "../data/gloveVecs.json";
-import { getConcretenessValues } from "./ConcretenessUtils";
-
-export const similarityWeight = 1.0;
-export const categoryWeight = 1.0;
-export const concretenessWeight = 0.5;
-export const tfidfWeight = 2.0;
 
 /** A utility class for calculating simularity scores */
 
 const similarityMin = 0.0;
-const kTopSimilarWords = 5;
 
 /** Get a term's vec */
 export function getTermVec(term: string): number[] {
