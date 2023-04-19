@@ -72,7 +72,7 @@ export function getFinalSimilarityOfAllUsers(userTerms: {[id: string]: string[]}
         var weightsB: number[] = [];
         for (var simTerm of Object.keys(simScoresB)) {
           var weight = userWeights[usernameB][simTerm];
-          weightsB.push(simScoresB[simTerm] * weight);
+          weightsB.push(simScoresB[simTerm] * similarityWeight + weight);
         }
         weightsB.sort((a, b) => {
           return b - a; 
