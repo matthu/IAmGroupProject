@@ -48,9 +48,8 @@ function Nav(props: NavProps) {
           aria-label="full width tabs example"
           classes={{indicator: classes.indicator}}
         >
-          <Tab label="Home" value={PAGE.home} />
-          <Tab label="About" value={PAGE.about} />
-          <Tab label="Steps" value={PAGE.steps} />
+          <Tab label="I AM GROUP" value={PAGE.home} />
+          {/* <Tab label="About" value={PAGE.about} /> */}
         </Tabs>
     </AppBar>
   );
