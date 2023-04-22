@@ -12,7 +12,7 @@ const useStyles = makeStyles(theme => ({
     display: 'flex',
     flexDirection: 'row',
     boxShadow: '0px 4px 4px 0px rgb(0 0 0 / 5%), 0px 1px 12px 0px rgb(0 0 0 / 20%)',
-    background: 'linear-gradient(142deg, rgba(71,86,214,1) 11%, rgba(21,133,198,1) 50%, rgba(85,71,214,1) 92%)',
+    background: 'linear-gradient(142deg, rgba(47,148,2,1) 11%, rgba(63,185,0,1) 50%, rgba(142,228,95,1) 92%)',
     paddingLeft: '10vw',
     paddingRight: '10vw',
   },
@@ -22,6 +22,7 @@ const useStyles = makeStyles(theme => ({
     maxWidth: '200px',
   },
   nav: {
+    fontWeight: "bold"
   },
   indicator: {
     backgroundColor: 'white'
@@ -48,7 +49,7 @@ function Nav(props: NavProps) {
           aria-label="full width tabs example"
           classes={{indicator: classes.indicator}}
         >
-          <Tab label="I AM GROUP" value={PAGE.home} />
+          <Tab style={{ fontWeight: "bold" }} label="I AM GROUP" value={PAGE.home} />
           {/* <Tab label="About" value={PAGE.about} /> */}
         </Tabs>
     </AppBar>

@@ -24,7 +24,9 @@ const useStyles = makeStyles(theme => ({
   },
   profileImage: {
     borderRadius: '8px',
+    width: '40%',
     maxWidth: '500px',
+    height: "fit-content",
     marginRight: '30px',
   },
   textContainer: {
@@ -48,7 +50,7 @@ const useStyles = makeStyles(theme => ({
     display: "block"
   },
   parametersContainer: {
-    minWidth: "300px",
+    maxWidth: "300px",
     marginRight: "40px"
   },
   groupsContainer: {
@@ -56,6 +58,7 @@ const useStyles = makeStyles(theme => ({
   },
   groupButton: {
     width: "100%",
+    fontWeight: "bold"
   },
 }));
 
@@ -311,9 +314,19 @@ function Home() {
             <Typography variant='subtitle1'>I AM GROUP was created by Evelyn Crowe, Matthew Kocmoud, Sergio Herrera, and Siddhant Thakur for CSCE 670 Spring '23, taught by Dr. Caverlee.</Typography>
           </div>
         </div>
+        <br />
         <div className={classes.flexContainer}>
           <div className={classes.parametersContainer}>
-            <Typography variant='h5'>Settings</Typography>
+            <Button
+              variant="contained"
+              color="primary"
+              className={classes.groupButton}
+              onClick={() => setCategories(localCategories)}
+            >
+              Generate Groups
+            </Button>
+            <br />
+            <br />
             <br />
             <Autocomplete
               multiple
@@ -327,20 +340,11 @@ function Home() {
                   {...params}
                   style={{ backgroundColor: "white" }}
                   variant="outlined"
-                  label="Emphasis Categories"
+                  label="Focus Categories"
                   placeholder="Select categories"
                 />
               )}
             />
-            <br />
-            <Button
-              variant="contained"
-              color="primary"
-              className={classes.groupButton}
-              onClick={() => setCategories(localCategories)}
-            >
-              Generate Groups
-            </Button>
           </div>
           <div className={classes.groupsContainer}>
             <Typography variant='h5'>Groups</Typography>
