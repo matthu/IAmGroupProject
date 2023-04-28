@@ -5,14 +5,14 @@
 import React, { useState } from 'react';
 import { makeStyles } from '@material-ui/core';
 import Nav from './components/Nav';
-// import About from './pages/About';
+import About from './pages/About';
 import Home from './pages/Home';
 import circuitImage1 from './images/circuit1.png';
 import circuitImage2 from './images/circuit2.png';
 
 export const enum PAGE {
   home = 'home',
-  // about = 'about'
+  about = 'about'
 }
 
 const useStyles = makeStyles(theme => ({
@@ -62,9 +62,9 @@ function App() {
           { currentTab === PAGE.home &&
             <Home />
           }
-          {/* { currentTab === PAGE.about &&
+          { currentTab === PAGE.about &&
             <About />
-          } */}
+          }
         </div>
       </div>
     </div>

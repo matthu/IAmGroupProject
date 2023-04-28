@@ -50,7 +50,7 @@ function Nav(props: NavProps) {
           classes={{indicator: classes.indicator}}
         >
           <Tab style={{ fontWeight: "bold" }} label="I AM GROUP" value={PAGE.home} />
-          {/* <Tab label="About" value={PAGE.about} /> */}
+          <Tab style={{ fontWeight: "bold" }} label="About" value={PAGE.about} />
         </Tabs>
     </AppBar>
   );
