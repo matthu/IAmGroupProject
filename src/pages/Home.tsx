@@ -24,8 +24,7 @@ const useStyles = makeStyles(theme => ({
   },
   profileImage: {
     borderRadius: '8px',
-    width: '40%',
-    maxWidth: '500px',
+    width: '500px',
     height: "fit-content",
     marginRight: '30px',
   },
