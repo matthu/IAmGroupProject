@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
   profileImage: {
     borderRadius: '8px',
     width: '500px',
-    height: "fit-content",
+    height: '410px',
     marginRight: '30px',
   },
   textContainer: {
